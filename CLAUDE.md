@@ -94,5 +94,23 @@ Depois que teammates terminarem:
 
 ### Fase 3 — Monitorar (Loops)
 - /loop 5m /check-tests — testa e auto-corrige
-- /loop 10m /telegram-feedback — processa feedback Telegram (chat_id: 1009894188)
 - /loop 5m /babysit — monitora PRs, auto-rebase, fix CI
+
+## Telegram — Processar feedback em tempo real
+
+Quando mensagem Telegram chegar (tag `<channel source="plugin:telegram:telegram">`), processa IMEDIATAMENTE:
+
+1. Lê texto da mensagem
+2. Categoriza:
+   - Contém "bug"/"erro"/"quebrou"/"falhou" → Bug report
+   - Contém "quero"/"precisava"/"adiciona"/"feature" → Feature request
+   - Contém "status"/"testes"/"rodou" → Status check
+   - Contém "?" → Pergunta
+3. Age:
+   - Bug → `gh issue create --title "Bug: {resumo}" --body "{msg}"` → responde no Telegram "Issue criada: {url}"
+   - Feature → `gh issue create --title "Feature: {resumo}" --body "{msg}" --label enhancement` → responde no Telegram
+   - Status → roda `npm test 2>&1` → responde resultado no Telegram
+   - Pergunta → responde no Telegram com resposta útil baseada neste CLAUDE.md
+   - Outro → responde normalmente no Telegram
+4. Usa tool `mcp__plugin_telegram_telegram__reply` com chat_id da mensagem
+5. SEMPRE responde no Telegram. NUNCA ignora mensagem.
