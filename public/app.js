@@ -80,7 +80,18 @@ async function apiFetch(url) {
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+            let friendlyMessage = errorData.error || `Erro ${response.status}`;
+
+            // Provide friendlier error messages
+            if (response.status === 404) {
+                friendlyMessage = 'Esse filme saiu de cartaz';
+            } else if (response.status >= 500) {
+                friendlyMessage = 'Desculpe, algo deu errado. Tenta de novo.';
+            } else if (!navigator.onLine) {
+                friendlyMessage = 'Parece que a conexão caiu. Tenta de novo!';
+            }
+
+            throw new Error(friendlyMessage);
         }
 
         const data = await response.json();
@@ -89,7 +100,9 @@ async function apiFetch(url) {
     } catch (error) {
         hideLoadingBar();
         devLog('API Error:', error);
-        showToast(error.message, 'error');
+        if (error.message) {
+            showToast(error.message, 'error');
+        }
         throw error;
     }
 }
@@ -147,7 +160,7 @@ function showToast(message, type = 'error') {
     toast.className = `toast ${type}`;
     toast.innerHTML = `
         <span>${escapeHtml(message)}</span>
-        <button class="toast-close" aria-label="Fechar notificação">✕</button>
+        <button class="toast-close" aria-label="Fechar notificação"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     `;
 
     const closeBtn = toast.querySelector('.toast-close');
@@ -566,7 +579,7 @@ function renderTVDetail(tv) {
     return `
         ${renderBreadcrumb(tv.name)}
 
-        <button class="back-button" id="back-button" aria-label="Voltar para página anterior"><span style="display: inline-block;">←</span> Voltar</button>
+        <button class="back-button" id="back-button" aria-label="Voltar para página anterior"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-right:6px"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Voltar</button>
 
         <div class="detail-backdrop">
             ${backdropImg}
@@ -649,13 +662,21 @@ function renderTopList(items) {
 }
 
 /**
- * Render loading state
+ * Render loading state with random messages
  */
 function renderLoading() {
+    const loadingMessages = [
+        'Preparando a sessão...',
+        'Buscando nos bastidores...',
+        'Rolando os créditos...',
+        'Ajustando as luzes...'
+    ];
+    const randomMessage = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+
     return `
         <div class="loading">
             <div class="spinner"></div>
-            <p class="loading-text">Carregando...</p>
+            <p class="loading-text">${randomMessage}</p>
         </div>
     `;
 }
@@ -666,7 +687,7 @@ function renderLoading() {
 function renderError(message) {
     return `
         <div class="error-message">
-            ⚠️ ${escapeHtml(message)}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:middle;margin-right:8px"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 15h-2v-2h2v2m0-4h-2V7h2v6z"/></svg>${escapeHtml(message)}
         </div>
     `;
 }
@@ -833,7 +854,7 @@ function renderPersonDetail(person) {
     return `
         ${renderBreadcrumb(person.name)}
 
-        <button class="back-button" id="back-button" aria-label="Voltar para página anterior"><span style="display: inline-block;">←</span> Voltar</button>
+        <button class="back-button" id="back-button" aria-label="Voltar para página anterior"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-right:6px"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Voltar</button>
 
         <div class="person-detail-container">
             <div class="person-detail-photo-wrapper">
@@ -926,7 +947,7 @@ function renderCollectionPage(collection) {
     return `
         ${renderBreadcrumb(collection.name)}
 
-        <button class="back-button" id="back-button" aria-label="Voltar para página anterior"><span style="display: inline-block;">←</span> Voltar</button>
+        <button class="back-button" id="back-button" aria-label="Voltar para página anterior"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-right:6px"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Voltar</button>
 
         <div class="collection-detail">
             <h1>${escapeHtml(collection.name)}</h1>
@@ -1050,9 +1071,9 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
 
     const quickLinks = `
         <div class="quick-links-section">
-            <a href="#/people" class="quick-link-btn">👥 Pessoas Populares</a>
-            <a href="#/trending/day" class="quick-link-btn">🔥 Tendência de Hoje</a>
-            <a href="#/top" class="quick-link-btn">⭐ Top 20</a>
+            <a href="#/people" class="quick-link-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:middle;margin-right:6px"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Pessoas Populares</a>
+            <a href="#/trending/day" class="quick-link-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:middle;margin-right:6px"><path d="M16 6l2.29 2.29-4.58 4.58-4-4L2 16.86 3.41 18.27 9.59 12.09l4 4 6.3-6.29L22 12v-6z"/></svg>Tendência de Hoje</a>
+            <a href="#/top" class="quick-link-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:middle;margin-right:6px"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z"/></svg>Top 20</a>
         </div>
     `;
 
@@ -1096,7 +1117,7 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
         </div>
 
         <div class="carousel-section is-home-carousel">
-            <div class="section-title">Tendência da Semana</div>
+            <div class="section-title">Em Alta Essa Semana</div>
             <div class="carousel-container">
                 ${trendingMovies.map(m => renderMovieCard(m, true)).join('')}
             </div>
@@ -1114,7 +1135,7 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
         </div>
 
         <div class="carousel-section is-home-carousel">
-            <div class="section-title">Populares Agora</div>
+            <div class="section-title">Todo Mundo Tá Assistindo</div>
             <div class="carousel-container">
                 ${popularMovies.map(m => renderMovieCard(m, false)).join('')}
             </div>
@@ -1123,7 +1144,7 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
         </div>
 
         <div class="carousel-section is-home-carousel">
-            <div class="section-title">Melhor Avaliados</div>
+            <div class="section-title">Os Mais Bem Avaliados</div>
             <div class="carousel-container">
                 ${topRatedMovies.map(m => renderMovieCard(m, false)).join('')}
             </div>
@@ -1149,9 +1170,9 @@ function renderSearchResults(query, results, page = 1) {
     if (totalPages > 1) {
         paginationHtml = `
             <div class="pagination">
-                ${page > 1 ? `<button class="pagination-btn" data-page="${page - 1}" data-search-query="${sanitizedQuery}">← Anterior</button>` : ''}
+                ${page > 1 ? `<button class="pagination-btn" data-page="${page - 1}" data-search-query="${sanitizedQuery}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Anterior</button>` : ''}
                 <span class="pagination-info">Página ${page} de ${totalPages}</span>
-                ${page < totalPages ? `<button class="pagination-btn" data-page="${page + 1}" data-search-query="${sanitizedQuery}">Próxima →</button>` : ''}
+                ${page < totalPages ? `<button class="pagination-btn" data-page="${page + 1}" data-search-query="${sanitizedQuery}">Próxima <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-left:4px"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>` : ''}
             </div>
         `;
     }
@@ -1159,7 +1180,10 @@ function renderSearchResults(query, results, page = 1) {
     if (movies.length === 0) {
         return `
             <div class="search-page-title">Resultados para "${sanitizedQuery}"</div>
-            <div class="no-results">Nenhum filme encontrado</div>
+            <div class="no-results">
+                <p>Nenhum resultado pra essa busca. Tenta outro título?</p>
+                <p style="font-size: 0.9em; margin-top: 1rem; opacity: 0.8;">Que tal tentar 'Interestelar' ou 'Parasita'?</p>
+            </div>
         `;
     }
 
@@ -1188,9 +1212,9 @@ function renderGenrePage(genreId, genreName, movies, page = 1) {
     if (totalPages > 1) {
         paginationHtml = `
             <div class="pagination">
-                ${page > 1 ? `<button class="pagination-btn" data-page="${page - 1}" data-genre-id="${genreId}">← Anterior</button>` : ''}
+                ${page > 1 ? `<button class="pagination-btn" data-page="${page - 1}" data-genre-id="${genreId}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Anterior</button>` : ''}
                 <span class="pagination-info">Página ${page} de ${totalPages}</span>
-                ${page < totalPages ? `<button class="pagination-btn" data-page="${page + 1}" data-genre-id="${genreId}">Próxima →</button>` : ''}
+                ${page < totalPages ? `<button class="pagination-btn" data-page="${page + 1}" data-genre-id="${genreId}">Próxima <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-left:4px"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>` : ''}
             </div>
         `;
     }
@@ -1351,7 +1375,7 @@ function renderMovieDetail(movie) {
     return `
         ${renderBreadcrumb(movie.title)}
 
-        <button class="back-button" id="back-button" aria-label="Voltar para página anterior"><span style="display: inline-block;">←</span> Voltar</button>
+        <button class="back-button" id="back-button" aria-label="Voltar para página anterior"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-right:6px"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Voltar</button>
 
         <div class="detail-backdrop">
             ${backdropImg}
@@ -2089,25 +2113,26 @@ window.addEventListener('hashchange', handleRoute);
  */
 function setupOfflineDetection() {
     window.addEventListener('online', () => {
-        showToast('Conexão restaurada', 'success');
+        showToast('De volta ao filme!', 'success');
     });
 
     window.addEventListener('offline', () => {
-        showToast('Você está offline', 'error');
+        showToast('Sem pipoca sem internet. Reconecta!', 'error');
     });
 }
 
 /**
- * Setup placeholder animation
+ * Setup placeholder animation with conversational suggestions
  */
 function setupPlaceholderAnimation() {
     const searchInput = document.getElementById('search-input');
     if (!searchInput) return;
 
     const placeholders = [
-        'Buscar filmes...',
-        'Tente: Matrix',
-        'Tente: Interestelar'
+        'O que vamos assistir hoje?',
+        'Tenta: O Poderoso Chefão',
+        'Tenta: Parasita',
+        'Tenta: Breaking Bad'
     ];
 
     let currentIndex = 0;

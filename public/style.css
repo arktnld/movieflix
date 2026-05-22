@@ -34,17 +34,17 @@
     --primary-800: #142d3d;
     --primary-900: #0a1a24;
 
-    /* ============ COLOR PALETTE — ACCENT (Red/Crimson) ============ */
-    --accent-50: #fef2f2;
-    --accent-100: #fee2e2;
-    --accent-200: #fecaca;
-    --accent-300: #fca5a5;
-    --accent-400: #f87171;
-    --accent-500: #e74c3c;
-    --accent-600: #c0392b;
-    --accent-700: #b01a1a;
-    --accent-800: #7f1d1d;
-    --accent-900: #4c0f0f;
+    /* ============ COLOR PALETTE — ACCENT (Warm Gold/Amber Cinematic) ============ */
+    --accent-50: #fef8f0;
+    --accent-100: #fef0e0;
+    --accent-200: #fde5c7;
+    --accent-300: #fdd4a3;
+    --accent-400: #f5b561;
+    --accent-500: #C8922A;
+    --accent-600: #a67722;
+    --accent-700: #7d5a17;
+    --accent-800: #5c4111;
+    --accent-900: #3a2808;
 
     /* ============ COLOR PALETTE — NEUTRAL (Grays) ============ */
     --neutral-50: #fafafa;
@@ -69,8 +69,8 @@
     --rating-gold-light: #ffd700;
 
     /* ============ TYPOGRAPHY SCALE ============ */
-    --font-display: 3rem;
-    --font-h1: 2.5rem;
+    --font-display: 3.5rem;
+    --font-h1: 3.5rem;
     --font-h2: 2rem;
     --font-h3: 1.5rem;
     --font-h4: 1.25rem;
@@ -865,7 +865,7 @@ h1, h2, h3, h4, h5, h6 {
 /* ============ MOVIE CARD ============ */
 .movie-card {
     cursor: pointer;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     overflow: hidden;
     background-color: var(--bg-tertiary);
     opacity: 0;
@@ -881,24 +881,8 @@ h1, h2, h3, h4, h5, h6 {
     flex: 0 0 180px;
 }
 
-.movie-card::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: var(--radius-lg);
-    opacity: 0;
-    background: linear-gradient(
-        135deg,
-        rgba(231, 76, 60, 0.0) 0%,
-        rgba(231, 76, 60, 0.15) 50%,
-        rgba(231, 76, 60, 0.0) 100%
-    );
-    pointer-events: none;
-    z-index: 1;
-}
-
 .movie-card:hover {
-    box-shadow: 0 12px 40px rgba(231, 76, 60, 0.3), var(--shadow-3);
+    box-shadow: 0 12px 40px rgba(200, 146, 42, 0.2), var(--shadow-3);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -915,10 +899,6 @@ h1, h2, h3, h4, h5, h6 {
     .movie-card:hover {
         transform: translateY(-10px) scale(1.03);
         filter: brightness(1.15) contrast(1.05);
-    }
-
-    .movie-card:hover::after {
-        opacity: 1;
     }
 
     .movie-card .movie-poster {
@@ -967,20 +947,6 @@ h1, h2, h3, h4, h5, h6 {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     z-index: 10;
-    animation: badgePulse 2s var(--ease-in-out) infinite;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    @keyframes badgePulse {
-        0%, 100% {
-            opacity: 1;
-            transform: scale(1);
-        }
-        50% {
-            opacity: 0.8;
-            transform: scale(1.05);
-        }
-    }
 }
 
 .movie-poster {
@@ -1646,15 +1612,6 @@ h1, h2, h3, h4, h5, h6 {
 
 .heart {
     display: inline-block;
-    animation: heartbeat var(--duration-slow) var(--ease-in-out) infinite;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    @keyframes heartbeat {
-        0%, 100% { transform: scale(1); }
-        25% { transform: scale(1.2); }
-        50% { transform: scale(1); }
-    }
 }
 
 /* ============ SCROLL TO TOP BUTTON ============ */
