@@ -1667,13 +1667,13 @@ async function loadSeriesHome() {
 
     try {
         await transitionPage();
-        const [trending, popular, topRated, nowPlaying, upcoming] = await Promise.all([
+        const [trending, popular, topRated, nowPlaying] = await Promise.all([
             apiFetch('/api/tv/trending'),
             apiFetch('/api/tv/popular'),
             apiFetch('/api/tv/top-rated'),
-            apiFetch('/api/tv/on-the-air'),
-            apiFetch('/api/tv/upcoming')
+            apiFetch('/api/tv/on-the-air')
         ]);
+        const upcoming = nowPlaying;
 
         app.innerHTML = renderSeriesHome(trending, popular, topRated, nowPlaying, upcoming);
         attachMovieCardListeners();

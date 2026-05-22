@@ -517,7 +517,6 @@ app.get('/api/tv/on-the-air', async (req, res) => {
 
 // GET /api/tv/upcoming (MUST be before /api/tv/:id to avoid wildcard match)
 app.get('/api/tv/upcoming', async (req, res) => {
-  // Reject unexpected query parameters
   const allowedParams = [];
   const queryKeys = Object.keys(req.query);
   if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
