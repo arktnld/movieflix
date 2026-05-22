@@ -306,6 +306,54 @@ Crie agent team com 3 teammates para expandir pra series:
    - Testa busca de series
    - Roda npm test e garante verde
 
+### Fase 12 — Novas Paginas TMDB (Agent Teams)
+Crie agent team com 3 teammates para paginas extras:
+
+1. **teammate "api-pages"** — Novos endpoints no backend:
+   - GET /api/people/popular → /person/popular?language=pt-BR (pessoas populares)
+   - GET /api/person/:id → /person/{id}?append_to_response=movie_credits,tv_credits&language=pt-BR (detalhe pessoa)
+   - GET /api/trending/day → /trending/all/day?language=pt-BR (trending diario)
+   - GET /api/movie/:id/collection → busca collection_id do filme, depois /collection/{id}?language=pt-BR
+   - Validacao e error handling em todos endpoints
+   - Quando terminar: manda mensagem pro ui-pages
+
+2. **teammate "ui-pages"** — ESPERA api-pages. Novas paginas no frontend:
+   - Pagina Pessoas Populares (#/people): grid de atores/diretores com foto, nome, filmes conhecidos
+   - Pagina Detalhe Pessoa (#/person/{id}): foto, bio, filmografia (filmes + series separados)
+   - Pagina Trending Hoje (#/trending/day): grid com filmes+series do dia, badge tipo
+   - Pagina Colecao (#/collection/{id}): lista de filmes da saga/franquia ordenados por data
+   - Links de navegacao: adicionar "Pessoas" e "Trending Hoje" na home ou navbar
+   - Clicar em ator na pagina de detalhe do filme leva pra #/person/{id}
+
+3. **teammate "test-pages"** — ESPERA os outros. Testes:
+   - Testa todos novos endpoints
+   - Testa person com id invalido
+   - Roda npm test e garante verde
+
+### Fase 13 — Remover Vicios de IA (Agent Teams)
+Crie agent team com 2 teammates para profissionalizar:
+
+1. **teammate "anti-ai-visual"** — Remove padroes visuais genericos de IA:
+   - Substituir emojis por SVG icons inline (film reel, star, search, arrow, etc)
+   - Paleta de cores mais cinematografica e unica (nao vermelho generico)
+   - Gradientes mais sutis e organicos (nao linear-gradient obvio)
+   - Tipografia com mais carater (avaliar alternativas a Inter/Poppins)
+   - Layout menos perfeitamente simetrico — mais editorial/magazine
+   - Espacamento com mais variacao (nao tudo com mesmo gap)
+   - Reduzir animacoes (menos pulse, menos bounce — mais fade sutil)
+   - Cards com design mais unico (nao so retangulo com sombra)
+   - Hero com layout mais criativo (texto sobreposto, recortes)
+
+2. **teammate "anti-ai-copy"** — Remove padroes de texto de IA:
+   - Micro-copias mais naturais em pt-BR (nao traducao literal)
+   - Mensagens de erro com personalidade (nao generico "Erro interno")
+   - Loading states com mensagens variadas (nao sempre "Carregando...")
+   - Empty states com humor sutil
+   - Textos de interface revisados por naturalidade
+   - Remover excesso de feedback visual (nem tudo precisa toast)
+   - Footer com texto mais humano
+   - 404 page com personalidade
+
 ## Telegram — Processar feedback em tempo real
 
 Quando mensagem Telegram chegar (tag `<channel source="plugin:telegram:telegram">`), processa IMEDIATAMENTE:

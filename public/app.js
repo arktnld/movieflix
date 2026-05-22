@@ -1796,6 +1796,12 @@ function attachMediaToggleListeners() {
             });
             btn.classList.add('media-toggle-btn-active');
 
+            // Update sliding indicator
+            const toggle = document.querySelector('.media-toggle');
+            if (toggle) {
+                toggle.classList.toggle('tv-active', mediaType === 'tv');
+            }
+
             // Reload home page with different media type
             app.innerHTML = renderLoading();
             try {
