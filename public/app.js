@@ -1513,6 +1513,95 @@ function renderMovieDetail(movie) {
     `;
 }
 
+/**
+ * Render series home page with hero banner and carousels
+ */
+function renderSeriesHome(trendingData, popularData, topRatedData, nowPlayingData, upcomingData) {
+    if (!trendingData || !Array.isArray(trendingData.results)) {
+        return renderError('Dados inválidos recebidos do servidor');
+    }
+
+    const trendingSeries = Array.isArray(trendingData.results) ? trendingData.results.slice(0, 20) : [];
+    const heroBanner = renderHeroSlideshow(trendingSeries.slice(0, 5));
+
+    const mediaToggle = `
+        <div class="media-toggle-section">
+            <div class="media-toggle">
+                <a href="#/" class="media-toggle-btn">Filmes</a>
+                <a href="#/series" class="media-toggle-btn media-toggle-btn-active">Séries</a>
+            </div>
+        </div>
+    `;
+
+    const quickLinks = `
+        <div class="quick-links-section">
+            <a href="#/people" class="quick-link-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:middle;margin-right:6px"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Pessoas Populares</a>
+            <a href="#/trending/day" class="quick-link-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:middle;margin-right:6px"><path d="M16 6l2.29 2.29-4.58 4.58-4-4L2 16.86 3.41 18.27 9.59 12.09l4 4 6.3-6.29L22 12v-6z"/></svg>Tendência de Hoje</a>
+            <a href="#/top" class="quick-link-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:middle;margin-right:6px"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z"/></svg>Top 20</a>
+        </div>
+    `;
+
+    const addMediaType = (items, type) => items.map(item => ({ ...item, media_type: item.media_type || type }));
+
+    const popularSeries = addMediaType(Array.isArray(popularData?.results) ? popularData.results.slice(0, 20) : [], 'tv');
+    const topRatedSeries = addMediaType(Array.isArray(topRatedData?.results) ? topRatedData.results.slice(0, 20) : [], 'tv');
+    const nowPlayingSeries = addMediaType(Array.isArray(nowPlayingData?.results) ? nowPlayingData.results.slice(0, 20) : [], 'tv');
+    const upcomingSeries = addMediaType(Array.isArray(upcomingData?.results) ? upcomingData.results.slice(0, 20) : [], 'tv');
+
+    return `
+        ${heroBanner}
+
+        ${mediaToggle}
+
+        ${quickLinks}
+
+        <div class="carousel-section is-home-carousel">
+            <div class="section-title">Transmitindo Agora</div>
+            <div class="carousel-container">
+                ${nowPlayingSeries.map(s => renderMovieCard(s, false)).join('')}
+            </div>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+        </div>
+
+        <div class="carousel-section is-home-carousel">
+            <div class="section-title">Séries em Alta Essa Semana</div>
+            <div class="carousel-container">
+                ${trendingSeries.map(s => renderMovieCard(s, true)).join('')}
+            </div>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+        </div>
+
+        <div class="carousel-section is-home-carousel">
+            <div class="section-title">Próximos Lançamentos</div>
+            <div class="carousel-container">
+                ${upcomingSeries.map(s => renderMovieCard(s, false)).join('')}
+            </div>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+        </div>
+
+        <div class="carousel-section is-home-carousel">
+            <div class="section-title">Séries Mais Populares</div>
+            <div class="carousel-container">
+                ${popularSeries.map(s => renderMovieCard(s, false)).join('')}
+            </div>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+        </div>
+
+        <div class="carousel-section is-home-carousel">
+            <div class="section-title">Melhor Avaliadas</div>
+            <div class="carousel-container">
+                ${topRatedSeries.map(s => renderMovieCard(s, false)).join('')}
+            </div>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+        </div>
+    `;
+}
+
 // ============ PAGE NAVIGATION & LOADING ============
 
 const app = document.getElementById('app');
@@ -1550,6 +1639,39 @@ async function loadHome() {
         announceToScreenReader('Página inicial carregada');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         currentPage = 'home';
+    } catch (error) {
+        app.innerHTML = renderError(error.message);
+        focusMainContent();
+        announceToScreenReader(`Erro: ${error.message}`);
+    }
+}
+
+/**
+ * Load and render series home page
+ */
+async function loadSeriesHome() {
+    app.innerHTML = renderLoading();
+
+    try {
+        await transitionPage();
+        const [trending, popular, topRated, nowPlaying, upcoming] = await Promise.all([
+            apiFetch('/api/tv/trending'),
+            apiFetch('/api/tv/popular'),
+            apiFetch('/api/tv/top-rated'),
+            apiFetch('/api/tv/on-the-air'),
+            apiFetch('/api/tv/upcoming')
+        ]);
+
+        app.innerHTML = renderSeriesHome(trending, popular, topRated, nowPlaying, upcoming);
+        attachMovieCardListeners();
+        setupCardAnimationDelays();
+        setupHeroSlideshow();
+        setupCarouselNavigation();
+        setupCarouselTouch();
+        focusMainContent();
+        announceToScreenReader('Página de séries carregada');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        currentPage = 'series';
     } catch (error) {
         app.innerHTML = renderError(error.message);
         focusMainContent();
@@ -1908,55 +2030,6 @@ function attachTopListItemListeners() {
             }
         });
     });
-}
-
-/**
- * Attach listeners to genre pills
- */
-function attachGenrePillListeners() {
-    document.querySelectorAll('.genre-pill').forEach(pill => {
-        const handleGenreActivation = () => {
-            const genreId = pill.dataset.genreId;
-            window.location.hash = `#/genre/${genreId}`;
-        };
-
-        pill.addEventListener('click', handleGenreActivation);
-        pill.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                handleGenreActivation();
-            }
-        });
-    });
-}
-
-/**
- * Attach listeners to media toggle buttons
- */
-function attachMediaToggleListeners() {
-    document.querySelectorAll('.media-toggle-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const mediaType = btn.dataset.mediaType;
-            homeMediaType = mediaType;
-
-            // Update button states
-            document.querySelectorAll('.media-toggle-btn').forEach(b => {
-                b.classList.remove('media-toggle-btn-active');
-            });
-            btn.classList.add('media-toggle-btn-active');
-
-            // Update sliding indicator
-            const toggle = document.querySelector('.media-toggle');
-            if (toggle) {
-                toggle.classList.toggle('tv-active', mediaType === 'tv');
-            }
-
-            // Reload home page with different media type
-            app.innerHTML = renderLoading();
-            try {
-                await transitionPage();
-                const [trending, popular, topRated, genres, nowPlaying, upcoming] = await Promise.all([
-                    mediaType === 'tv' ? apiFetch('/api/tv/trending') : apiFetch('/api/trending'),
                     mediaType === 'tv' ? apiFetch('/api/tv/popular') : apiFetch('/api/popular'),
                     mediaType === 'tv' ? apiFetch('/api/tv/top-rated') : apiFetch('/api/top-rated'),
                     apiFetch('/api/genres'),
@@ -2106,6 +2179,9 @@ function handleRoute() {
 
     if (hash === '/') {
         loadHome();
+        searchInput.value = '';
+    } else if (hash === '/series') {
+        loadSeriesHome();
         searchInput.value = '';
     } else if (hash === '/top') {
         loadTopList();
