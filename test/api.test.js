@@ -137,4 +137,71 @@ describe('MovieFlix API Proxy', () => {
     const response = await fetch(`${baseUrl}/api/trending`);
     assert.strictEqual(response.headers.get('Content-Type'), 'application/json; charset=utf-8');
   });
+
+  test('GET /api/genres should return 200 with genres array', async () => {
+    const response = await fetch(`${baseUrl}/api/genres`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(Array.isArray(data.genres), 'response should have genres array');
+  });
+
+  test('GET /api/genres with unexpected params should return 400', async () => {
+    const response = await fetch(`${baseUrl}/api/genres?foo=bar`);
+    assert.strictEqual(response.status, 400);
+  });
+
+  test('GET /api/discover?genre=28 should return 200 with results array', async () => {
+    const response = await fetch(`${baseUrl}/api/discover?genre=28`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(Array.isArray(data.results), 'response should have results array');
+  });
+
+  test('GET /api/discover without genre should return 400', async () => {
+    const response = await fetch(`${baseUrl}/api/discover`);
+    assert.strictEqual(response.status, 400);
+  });
+
+  test('GET /api/discover?genre=abc should return 400', async () => {
+    const response = await fetch(`${baseUrl}/api/discover?genre=abc`);
+    assert.strictEqual(response.status, 400);
+  });
+
+  test('GET /api/upcoming should return 200 with results array', async () => {
+    const response = await fetch(`${baseUrl}/api/upcoming`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(Array.isArray(data.results), 'response should have results array');
+  });
+
+  test('GET /api/now-playing should return 200 with results array', async () => {
+    const response = await fetch(`${baseUrl}/api/now-playing`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(Array.isArray(data.results), 'response should have results array');
+  });
+
+  test('GET /api/movie/550/similar should return 200 with results array', async () => {
+    const response = await fetch(`${baseUrl}/api/movie/550/similar`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(Array.isArray(data.results), 'response should have results array');
+  });
+
+  test('GET /api/movie/abc/similar should return 400', async () => {
+    const response = await fetch(`${baseUrl}/api/movie/abc/similar`);
+    assert.strictEqual(response.status, 400);
+  });
+
+  test('GET /api/movie/550/reviews should return 200', async () => {
+    const response = await fetch(`${baseUrl}/api/movie/550/reviews`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(data !== null && typeof data === 'object', 'response should be valid object');
+  });
+
+  test('GET /api/movie/abc/reviews should return 400', async () => {
+    const response = await fetch(`${baseUrl}/api/movie/abc/reviews`);
+    assert.strictEqual(response.status, 400);
+  });
 });

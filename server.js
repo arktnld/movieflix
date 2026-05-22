@@ -225,6 +225,179 @@ app.get('/api/movie/:id', async (req, res) => {
   }
 });
 
+// GET /api/genres
+app.get('/api/genres', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const data = await fetchTMDB('/genre/movie/list?language=pt-BR');
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
+// GET /api/discover?genre=X
+app.get('/api/discover', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = ['genre', 'page'];
+  const queryKeys = Object.keys(req.query);
+  if (!queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const { genre, page } = req.query;
+
+    // Validate genre is required
+    if (!genre) {
+      return res.status(400).json({ error: 'Query parameter genre is required' });
+    }
+
+    // Validate genre is numeric
+    if (!/^\d+$/.test(genre)) {
+      return res.status(400).json({ error: 'Genre ID must be a numeric value' });
+    }
+
+    // Validate page if provided
+    if (page !== undefined) {
+      if (!/^\d+$/.test(page)) {
+        return res.status(400).json({ error: 'Page must be a numeric value' });
+      }
+      if (parseInt(page) < 1 || parseInt(page) > 500) {
+        return res.status(400).json({ error: 'Page must be between 1 and 500' });
+      }
+    }
+
+    const pageParam = page ? `&page=${encodeURIComponent(page)}` : '';
+    const data = await fetchTMDB(`/discover/movie?with_genres=${encodeURIComponent(genre)}&language=pt-BR${pageParam}`);
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
+// GET /api/upcoming
+app.get('/api/upcoming', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const data = await fetchTMDB('/movie/upcoming?language=pt-BR');
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
+// GET /api/now-playing
+app.get('/api/now-playing', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const data = await fetchTMDB('/movie/now_playing?language=pt-BR');
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
+// GET /api/movie/:id/similar
+app.get('/api/movie/:id/similar', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const { id } = req.params;
+
+    // Validate id is numeric
+    if (!/^\d+$/.test(id)) {
+      return res.status(400).json({ error: 'Movie ID must be a numeric value' });
+    }
+
+    // Validate id is max 10 digits
+    if (id.length > 10) {
+      return res.status(400).json({ error: 'Movie ID must be a maximum of 10 digits' });
+    }
+
+    const data = await fetchTMDB(`/movie/${id}/similar?language=pt-BR`);
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
+// GET /api/movie/:id/reviews
+app.get('/api/movie/:id/reviews', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const { id } = req.params;
+
+    // Validate id is numeric
+    if (!/^\d+$/.test(id)) {
+      return res.status(400).json({ error: 'Movie ID must be a numeric value' });
+    }
+
+    // Validate id is max 10 digits
+    if (id.length > 10) {
+      return res.status(400).json({ error: 'Movie ID must be a maximum of 10 digits' });
+    }
+
+    const data = await fetchTMDB(`/movie/${id}/reviews?language=pt-BR`);
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
 // Start server only when run directly (not imported by tests)
 const isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {
