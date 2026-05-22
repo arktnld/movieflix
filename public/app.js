@@ -1150,8 +1150,8 @@ function renderHeroSlideshow(trendingMovies) {
     return `
         <div class="hero-slideshow">
             ${slides}
-            <button class="hero-nav-btn hero-nav-prev" aria-label="Slide anterior">‹</button>
-            <button class="hero-nav-btn hero-nav-next" aria-label="Próximo slide">›</button>
+            <button class="hero-nav-btn hero-nav-prev" aria-label="Slide anterior"></button>
+            <button class="hero-nav-btn hero-nav-next" aria-label="Próximo slide"></button>
             <div class="hero-controls">
                 ${dotsHtml}
             </div>
@@ -1226,8 +1226,8 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
             <div class="carousel-container">
                 ${nowPlayingMovies.map(m => renderMovieCard(m, false)).join('')}
             </div>
-            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
-            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda"></button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita"></button>
         </div>
 
         <div class="carousel-section is-home-carousel">
@@ -1235,8 +1235,8 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
             <div class="carousel-container">
                 ${trendingMovies.map(m => renderMovieCard(m, true)).join('')}
             </div>
-            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
-            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda"></button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita"></button>
         </div>
 
         <div class="carousel-section is-home-carousel">
@@ -1244,8 +1244,8 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
             <div class="carousel-container">
                 ${upcomingMovies.map(m => renderMovieCard(m, false)).join('')}
             </div>
-            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
-            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda"></button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita"></button>
         </div>
 
         <div class="carousel-section is-home-carousel">
@@ -1253,8 +1253,8 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
             <div class="carousel-container">
                 ${popularMovies.map(m => renderMovieCard(m, false)).join('')}
             </div>
-            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
-            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda"></button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita"></button>
         </div>
 
         <div class="carousel-section is-home-carousel">
@@ -1262,8 +1262,8 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
             <div class="carousel-container">
                 ${topRatedMovies.map(m => renderMovieCard(m, false)).join('')}
             </div>
-            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
-            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda"></button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita"></button>
         </div>
     `;
 }
@@ -1480,8 +1480,8 @@ function renderMovieDetail(movie) {
                 <div class="carousel-container">
                     ${similarMovies.map(m => renderMovieCard(m)).join('')}
                 </div>
-                <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
-                <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+                <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda"></button>
+                <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita"></button>
             </div>
         `;
     }
@@ -1560,8 +1560,8 @@ function renderSeriesHome(trendingData, popularData, topRatedData, nowPlayingDat
             <div class="carousel-container">
                 ${nowPlayingSeries.map(s => renderMovieCard(s, false)).join('')}
             </div>
-            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
-            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda"></button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita"></button>
         </div>
 
         <div class="carousel-section is-home-carousel">
@@ -1569,8 +1569,8 @@ function renderSeriesHome(trendingData, popularData, topRatedData, nowPlayingDat
             <div class="carousel-container">
                 ${trendingSeries.map(s => renderMovieCard(s, true)).join('')}
             </div>
-            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
-            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda"></button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita"></button>
         </div>
 
         <div class="carousel-section is-home-carousel">
@@ -1578,8 +1578,8 @@ function renderSeriesHome(trendingData, popularData, topRatedData, nowPlayingDat
             <div class="carousel-container">
                 ${upcomingSeries.map(s => renderMovieCard(s, false)).join('')}
             </div>
-            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
-            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda"></button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita"></button>
         </div>
 
         <div class="carousel-section is-home-carousel">
@@ -1587,8 +1587,8 @@ function renderSeriesHome(trendingData, popularData, topRatedData, nowPlayingDat
             <div class="carousel-container">
                 ${popularSeries.map(s => renderMovieCard(s, false)).join('')}
             </div>
-            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
-            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda"></button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita"></button>
         </div>
 
         <div class="carousel-section is-home-carousel">
@@ -1596,8 +1596,8 @@ function renderSeriesHome(trendingData, popularData, topRatedData, nowPlayingDat
             <div class="carousel-container">
                 ${topRatedSeries.map(s => renderMovieCard(s, false)).join('')}
             </div>
-            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
-            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda"></button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita"></button>
         </div>
     `;
 }

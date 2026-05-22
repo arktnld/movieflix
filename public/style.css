@@ -761,68 +761,69 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Navigation arrows */
+/* Carousel arrows — Netflix-style tall edge buttons */
 .carousel-nav {
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 48px;
-    height: 48px;
-    background: rgba(231, 76, 60, 0.7);
+    top: 0;
+    bottom: 0;
+    width: 44px;
+    background: rgba(10, 10, 10, 0.6);
     border: none;
-    border-radius: var(--radius-md);
     color: var(--text-primary);
-    font-size: 1.5rem;
+    font-size: 0;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: all var(--duration-normal) var(--ease-out);
+    transition: opacity var(--duration-normal) var(--ease-out), background var(--duration-fast) var(--ease-out);
     z-index: 20;
-    font-weight: bold;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .carousel-nav {
-        transition: all var(--duration-normal) var(--ease-out);
-    }
+.carousel-nav::after {
+    content: '';
+    display: block;
+    width: 14px;
+    height: 14px;
+    border-right: 2.5px solid var(--text-primary);
+    border-bottom: 2.5px solid var(--text-primary);
+}
 
-    .carousel-nav:hover {
-        background: rgba(231, 76, 60, 1);
-        transform: translateY(-50%) scale(1.1);
-        box-shadow: 0 8px 24px rgba(231, 76, 60, 0.4);
-    }
+.carousel-nav-left::after {
+    transform: rotate(135deg);
+    margin-left: 4px;
+}
 
-    .carousel-nav:active {
-        transform: translateY(-50%) scale(0.95);
-    }
+.carousel-nav-right::after {
+    transform: rotate(-45deg);
+    margin-right: 4px;
+}
+
+.carousel-nav:hover {
+    background: rgba(10, 10, 10, 0.85);
 }
 
 .carousel-nav-left {
-    left: var(--spacing-md);
+    left: 0;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 .carousel-nav-right {
-    right: var(--spacing-md);
+    right: 0;
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
 
 .carousel-nav:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    background: rgba(128, 128, 128, 0.5);
-}
-
-.carousel-nav:disabled:hover {
-    background: rgba(128, 128, 128, 0.5);
-    transform: translateY(-50%);
-    box-shadow: none;
+    opacity: 0 !important;
+    cursor: default;
+    pointer-events: none;
 }
 
 .carousel-section:hover .carousel-nav:not(:disabled) {
     opacity: 1;
 }
 
-/* Hide arrows on mobile, show for swipe only */
+/* Hide arrows on mobile — swipe only */
 @media (max-width: 640px) {
     .carousel-nav {
         display: none;
