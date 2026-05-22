@@ -1284,12 +1284,12 @@ h1, h2, h3, h4, h5, h6 {
 .video-container {
     position: relative;
     width: 100%;
-    max-width: 600px;
-    padding-bottom: 56.25%;
-    height: 0;
-    overflow: hidden;
+    max-width: 800px;
+    aspect-ratio: 16 / 9;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-2);
+    overflow: hidden;
+    background: var(--bg-tertiary);
 }
 
 .video-container iframe {

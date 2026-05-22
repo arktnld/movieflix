@@ -494,6 +494,48 @@ app.get('/api/tv/search', async (req, res) => {
   }
 });
 
+// GET /api/tv/on-the-air (MUST be before /api/tv/:id to avoid wildcard match)
+app.get('/api/tv/on-the-air', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const data = await fetchTMDB('/tv/on_the_air?language=pt-BR');
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
+// GET /api/tv/upcoming (MUST be before /api/tv/:id to avoid wildcard match)
+app.get('/api/tv/upcoming', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const data = await fetchTMDB('/tv/upcoming?language=pt-BR');
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
 // GET /api/tv/:id
 app.get('/api/tv/:id', async (req, res) => {
   // Reject unexpected query parameters
