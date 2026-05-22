@@ -569,6 +569,114 @@ app.get('/api/top-list', async (req, res) => {
   }
 });
 
+// GET /api/people/popular
+app.get('/api/people/popular', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const data = await fetchTMDB('/person/popular?language=pt-BR');
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
+// GET /api/person/:id
+app.get('/api/person/:id', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const { id } = req.params;
+
+    // Validate id is numeric
+    if (!/^\d+$/.test(id)) {
+      return res.status(400).json({ error: 'Person ID must be a numeric value' });
+    }
+
+    // Validate id is max 10 digits
+    if (id.length > 10) {
+      return res.status(400).json({ error: 'Person ID must be a maximum of 10 digits' });
+    }
+
+    const data = await fetchTMDB(`/person/${id}?append_to_response=movie_credits,tv_credits&language=pt-BR`);
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
+// GET /api/trending/day
+app.get('/api/trending/day', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const data = await fetchTMDB('/trending/all/day?language=pt-BR');
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
+// GET /api/collection/:id
+app.get('/api/collection/:id', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const { id } = req.params;
+
+    // Validate id is numeric
+    if (!/^\d+$/.test(id)) {
+      return res.status(400).json({ error: 'Collection ID must be a numeric value' });
+    }
+
+    // Validate id is max 10 digits
+    if (id.length > 10) {
+      return res.status(400).json({ error: 'Collection ID must be a maximum of 10 digits' });
+    }
+
+    const data = await fetchTMDB(`/collection/${id}?language=pt-BR`);
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
 // Start server only when run directly (not imported by tests)
 const isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {

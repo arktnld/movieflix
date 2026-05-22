@@ -264,4 +264,52 @@ describe('MovieFlix API Proxy', () => {
     const response = await fetch(`${baseUrl}/api/tv/trending?foo=bar`);
     assert.strictEqual(response.status, 400);
   });
+
+  test('GET /api/people/popular should return 200 with results array', async () => {
+    const response = await fetch(`${baseUrl}/api/people/popular`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(Array.isArray(data.results), 'response should have results array');
+  });
+
+  test('GET /api/people/popular with unexpected params should return 400', async () => {
+    const response = await fetch(`${baseUrl}/api/people/popular?foo=bar`);
+    assert.strictEqual(response.status, 400);
+  });
+
+  test('GET /api/person/500 should return 200 with name property', async () => {
+    const response = await fetch(`${baseUrl}/api/person/500`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(data.name, 'response should have name property');
+  });
+
+  test('GET /api/person/abc should return 400', async () => {
+    const response = await fetch(`${baseUrl}/api/person/abc`);
+    assert.strictEqual(response.status, 400);
+  });
+
+  test('GET /api/trending/day should return 200 with results array', async () => {
+    const response = await fetch(`${baseUrl}/api/trending/day`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(Array.isArray(data.results), 'response should have results array');
+  });
+
+  test('GET /api/trending/day with unexpected params should return 400', async () => {
+    const response = await fetch(`${baseUrl}/api/trending/day?foo=bar`);
+    assert.strictEqual(response.status, 400);
+  });
+
+  test('GET /api/collection/10 should return 200 with parts array', async () => {
+    const response = await fetch(`${baseUrl}/api/collection/10`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(Array.isArray(data.parts), 'response should have parts array');
+  });
+
+  test('GET /api/collection/abc should return 400', async () => {
+    const response = await fetch(`${baseUrl}/api/collection/abc`);
+    assert.strictEqual(response.status, 400);
+  });
 });
