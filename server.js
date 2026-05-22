@@ -398,6 +398,177 @@ app.get('/api/movie/:id/reviews', async (req, res) => {
   }
 });
 
+// GET /api/tv/trending
+app.get('/api/tv/trending', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const data = await fetchTMDB('/trending/tv/week?language=pt-BR');
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
+// GET /api/tv/popular
+app.get('/api/tv/popular', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const data = await fetchTMDB('/tv/popular?language=pt-BR');
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
+// GET /api/tv/top-rated
+app.get('/api/tv/top-rated', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const data = await fetchTMDB('/tv/top_rated?language=pt-BR');
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
+// GET /api/tv/search?q= (MUST be before /api/tv/:id to avoid wildcard match)
+app.get('/api/tv/search', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = ['q'];
+  const queryKeys = Object.keys(req.query);
+  if (!queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const { q } = req.query;
+
+    // Validate q is not empty
+    if (!q || q.trim() === '') {
+      return res.status(400).json({ error: 'Query parameter q is required and cannot be empty' });
+    }
+
+    // Limit search query to 200 characters
+    if (q.length > 200) {
+      return res.status(400).json({ error: 'Query parameter q must be 200 characters or less' });
+    }
+
+    const data = await fetchTMDB(`/search/tv?query=${encodeURIComponent(q)}&language=pt-BR`);
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
+// GET /api/tv/:id
+app.get('/api/tv/:id', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    const { id } = req.params;
+
+    // Validate id is numeric
+    if (!/^\d+$/.test(id)) {
+      return res.status(400).json({ error: 'Series ID must be a numeric value' });
+    }
+
+    // Validate id is max 10 digits
+    if (id.length > 10) {
+      return res.status(400).json({ error: 'Series ID must be a maximum of 10 digits' });
+    }
+
+    const data = await fetchTMDB(`/tv/${id}?append_to_response=credits,videos&language=pt-BR`);
+    res.json(data);
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
+// GET /api/top-list
+app.get('/api/top-list', async (req, res) => {
+  // Reject unexpected query parameters
+  const allowedParams = [];
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length > 0 && !queryKeys.every(k => allowedParams.includes(k))) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
+
+  try {
+    // Fetch both movie and TV top-rated in parallel
+    const [movieData, tvData] = await Promise.all([
+      fetchTMDB('/movie/top_rated?language=pt-BR'),
+      fetchTMDB('/tv/top_rated?language=pt-BR')
+    ]);
+
+    // Add media_type to each result
+    const moviesWithType = (movieData.results || []).map(item => ({
+      ...item,
+      media_type: 'movie'
+    }));
+
+    const seriesWithType = (tvData.results || []).map(item => ({
+      ...item,
+      media_type: 'tv'
+    }));
+
+    // Merge and sort by vote_average descending
+    const merged = [...moviesWithType, ...seriesWithType];
+    merged.sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0));
+
+    // Return top 20
+    res.json({ results: merged.slice(0, 20) });
+  } catch (error) {
+    const status = error.status || 500;
+    if (status >= 500) {
+      return res.status(status).json({ error: 'Erro interno do servidor' });
+    }
+    res.status(status).json({ error: error.message });
+  }
+});
+
 // Start server only when run directly (not imported by tests)
 const isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {

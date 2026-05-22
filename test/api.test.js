@@ -204,4 +204,64 @@ describe('MovieFlix API Proxy', () => {
     const response = await fetch(`${baseUrl}/api/movie/abc/reviews`);
     assert.strictEqual(response.status, 400);
   });
+
+  test('GET /api/tv/trending should return 200 with results array', async () => {
+    const response = await fetch(`${baseUrl}/api/tv/trending`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(Array.isArray(data.results), 'response should have results array');
+  });
+
+  test('GET /api/tv/popular should return 200 with results array', async () => {
+    const response = await fetch(`${baseUrl}/api/tv/popular`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(Array.isArray(data.results), 'response should have results array');
+  });
+
+  test('GET /api/tv/top-rated should return 200 with results array', async () => {
+    const response = await fetch(`${baseUrl}/api/tv/top-rated`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(Array.isArray(data.results), 'response should have results array');
+  });
+
+  test('GET /api/tv/123 (valid ID) should return 200 with name property', async () => {
+    const response = await fetch(`${baseUrl}/api/tv/123`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(data.name, 'response should have name property for TV series');
+  });
+
+  test('GET /api/tv/abc should return 400', async () => {
+    const response = await fetch(`${baseUrl}/api/tv/abc`);
+    assert.strictEqual(response.status, 400);
+  });
+
+  test('GET /api/tv/search?q=breaking should return 200 with results array', async () => {
+    const response = await fetch(`${baseUrl}/api/tv/search?q=breaking`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(Array.isArray(data.results), 'response should have results array');
+  });
+
+  test('GET /api/tv/search without q should return 400', async () => {
+    const response = await fetch(`${baseUrl}/api/tv/search`);
+    assert.strictEqual(response.status, 400);
+  });
+
+  test('GET /api/top-list should return 200 with results array with media_type', async () => {
+    const response = await fetch(`${baseUrl}/api/top-list`);
+    assert.strictEqual(response.status, 200);
+    const data = await response.json();
+    assert(Array.isArray(data.results), 'response should have results array');
+    if (data.results.length > 0) {
+      assert(data.results[0].media_type, 'items should have media_type property');
+    }
+  });
+
+  test('GET /api/tv/trending with unexpected params should return 400', async () => {
+    const response = await fetch(`${baseUrl}/api/tv/trending?foo=bar`);
+    assert.strictEqual(response.status, 400);
+  });
 });
