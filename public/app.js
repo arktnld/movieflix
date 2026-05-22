@@ -124,8 +124,13 @@ function showLoadingBar() {
 function hideLoadingBar() {
     const loadingBar = document.getElementById('loading-bar');
     if (loadingBar) {
-        loadingBar.classList.remove('active');
-        loadingBar.classList.add('complete');
+        loadingBar.classList.add('hide');
+        // Remove from DOM after animation completes
+        setTimeout(() => {
+            if (loadingBar.parentNode) {
+                loadingBar.style.display = 'none';
+            }
+        }, 500);
     }
 }
 
@@ -701,10 +706,117 @@ function render404Page() {
     return `
         <div class="not-found-page">
             <div class="not-found-content">
+                <svg width="120" height="120" viewBox="0 0 64 64" fill="none" style="display:block;margin:0 auto 2rem;filter:drop-shadow(0 4px 12px rgba(200,146,42,0.4))">
+                    <!-- Film strips -->
+                    <rect x="10" y="12" width="12" height="40" fill="#C8922A" rx="2"/>
+                    <rect x="26" y="8" width="12" height="48" fill="#f5b561" rx="2"/>
+                    <rect x="42" y="12" width="12" height="40" fill="#C8922A" rx="2"/>
+                    <!-- Reels/perforations -->
+                    <circle cx="16" cy="16" r="1.5" fill="#0a0a0a"/>
+                    <circle cx="16" cy="24" r="1.5" fill="#0a0a0a"/>
+                    <circle cx="16" cy="32" r="1.5" fill="#0a0a0a"/>
+                    <circle cx="16" cy="40" r="1.5" fill="#0a0a0a"/>
+                    <circle cx="16" cy="48" r="1.5" fill="#0a0a0a"/>
+                    <circle cx="32" cy="12" r="1.5" fill="#0a0a0a"/>
+                    <circle cx="32" cy="20" r="1.5" fill="#0a0a0a"/>
+                    <circle cx="32" cy="28" r="1.5" fill="#0a0a0a"/>
+                    <circle cx="32" cy="36" r="1.5" fill="#0a0a0a"/>
+                    <circle cx="32" cy="44" r="1.5" fill="#0a0a0a"/>
+                    <circle cx="32" cy="52" r="1.5" fill="#0a0a0a"/>
+                    <circle cx="48" cy="16" r="1.5" fill="#0a0a0a"/>
+                    <circle cx="48" cy="24" r="1.5" fill="#0a0a0a"/>
+                    <circle cx="48" cy="32" r="1.5" fill="#0a0a0a"/>
+                    <circle cx="48" cy="40" r="1.5" fill="#0a0a0a"/>
+                    <circle cx="48" cy="48" r="1.5" fill="#0a0a0a"/>
+                    <!-- Center accent star -->
+                    <polygon points="32,6 35,14 43,14 36,19 39,27 32,22 25,27 28,19 21,14 29,14" fill="#fdd4a3"/>
+                </svg>
                 <div class="not-found-number">404</div>
-                <h1 class="not-found-title">Página não encontrada</h1>
-                <p class="not-found-description">Desculpe, a página que você está procurando não existe.</p>
+                <h1 class="not-found-title">Cena Não Encontrada</h1>
+                <p class="not-found-description">Parece que este filme saiu de cartaz. Mas não se preocupe, temos muito mais cinema pra você descobrir!</p>
                 <a href="#/" class="not-found-link">Voltar para Home</a>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Render settings page
+ */
+function renderSettingsPage() {
+    // Load saved settings from localStorage
+    const theme = localStorage.getItem('theme') || 'dark';
+    const fontSize = localStorage.getItem('fontSize') || 'normal';
+    const language = localStorage.getItem('language') || 'pt-BR';
+    const adultContent = localStorage.getItem('adultContent') === 'true';
+
+    return `
+        <div class="settings-page">
+            <h1>Configurações</h1>
+
+            <!-- Aparência Section -->
+            <div class="settings-section">
+                <h2>Aparência</h2>
+
+                <div class="settings-row">
+                    <label for="theme-toggle">Tema</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="theme-toggle" ${theme === 'light' ? 'checked' : ''}>
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">${theme === 'light' ? 'Claro' : 'Escuro'}</span>
+                </div>
+
+                <div class="settings-row">
+                    <label for="font-size">Tamanho da Fonte</label>
+                    <select id="font-size" class="settings-select">
+                        <option value="small" ${fontSize === 'small' ? 'selected' : ''}>Pequeno</option>
+                        <option value="normal" ${fontSize === 'normal' ? 'selected' : ''}>Normal</option>
+                        <option value="large" ${fontSize === 'large' ? 'selected' : ''}>Grande</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Conteúdo Section -->
+            <div class="settings-section">
+                <h2>Conteúdo</h2>
+
+                <div class="settings-row">
+                    <label for="language">Idioma</label>
+                    <select id="language" class="settings-select">
+                        <option value="pt-BR" ${language === 'pt-BR' ? 'selected' : ''}>Português (Brasil)</option>
+                        <option value="en-US" ${language === 'en-US' ? 'selected' : ''}>English (US)</option>
+                    </select>
+                </div>
+
+                <div class="settings-row">
+                    <label for="adult-toggle">Conteúdo Adulto</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="adult-toggle" ${adultContent ? 'checked' : ''}>
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">${adultContent ? 'Ativado' : 'Desativado'}</span>
+                </div>
+            </div>
+
+            <!-- Sobre Section -->
+            <div class="settings-section about-section">
+                <h2>Sobre</h2>
+
+                <div class="settings-row">
+                    <span class="about-label">Versão</span>
+                    <span class="about-value">1.0.0</span>
+                </div>
+
+                <div class="settings-row">
+                    <span class="about-label">Dados fornecidos por</span>
+                    <span class="about-value"><a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">TMDB</a></span>
+                </div>
+
+                <div class="settings-row">
+                    <span class="about-label">Repositório</span>
+                    <span class="about-value"><a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a></span>
+                </div>
             </div>
         </div>
     `;
@@ -1047,10 +1159,6 @@ function renderHeroSlideshow(trendingMovies) {
     `;
 }
 
-/**
- * Global state for home page media type
- */
-let homeMediaType = 'movie';
 
 /**
  * Render home page with hero banner and carousels
@@ -1063,7 +1171,6 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
     const trendingMovies = Array.isArray(trendingData.results) ? trendingData.results.slice(0, 20) : [];
     const heroBanner = renderHeroSlideshow(trendingMovies.slice(0, 5));
 
-    const isTV = homeMediaType === 'tv';
     const mediaToggle = `
         <div class="media-toggle-section">
             <div class="media-toggle${isTV ? ' tv-active' : ''}">
@@ -1082,7 +1189,7 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
     `;
 
     let genresHtml = '';
-    if (homeMediaType !== 'tv' && genresData && Array.isArray(genresData.genres)) {
+    if (genresData && Array.isArray(genresData.genres)) {
         const genreTags = genresData.genres.slice(0, 15).map(g =>
             `<button class="genre-pill" data-genre-id="${g.id}" role="button" tabindex="0">${escapeHtml(g.name)}</button>`
         ).join('');
@@ -1099,12 +1206,11 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
 
     // Inject media_type for TV mode so cards route correctly
     const addMediaType = (items, type) => items.map(item => ({ ...item, media_type: item.media_type || type }));
-    const mt = isTV ? 'tv' : 'movie';
 
-    const popularMovies = addMediaType(Array.isArray(popularData?.results) ? popularData.results.slice(0, 20) : [], mt);
-    const topRatedMovies = addMediaType(Array.isArray(topRatedData?.results) ? topRatedData.results.slice(0, 20) : [], mt);
-    const nowPlayingMovies = addMediaType(Array.isArray(nowPlayingData?.results) ? nowPlayingData.results.slice(0, 20) : [], mt);
-    const upcomingMovies = addMediaType(Array.isArray(upcomingData?.results) ? upcomingData.results.slice(0, 20) : [], mt);
+    const popularMovies = addMediaType(Array.isArray(popularData?.results) ? popularData.results.slice(0, 20) : [], 'movie');
+    const topRatedMovies = addMediaType(Array.isArray(topRatedData?.results) ? topRatedData.results.slice(0, 20) : [], 'movie');
+    const nowPlayingMovies = addMediaType(Array.isArray(nowPlayingData?.results) ? nowPlayingData.results.slice(0, 20) : [], 'movie');
+    const upcomingMovies = addMediaType(Array.isArray(upcomingData?.results) ? upcomingData.results.slice(0, 20) : [], 'movie');
 
     return `
         ${heroBanner}
@@ -1436,7 +1542,6 @@ async function loadHome() {
         app.innerHTML = renderHome(trending, popular, topRated, genres, nowPlaying, upcoming);
         attachMovieCardListeners();
         attachGenrePillListeners();
-        attachMediaToggleListeners();
         setupCardAnimationDelays();
         setupHeroSlideshow();
         setupCarouselNavigation();
@@ -1742,6 +1847,18 @@ async function loadCollectionPage(collectionId) {
 }
 
 /**
+ * Load settings page
+ */
+function loadSettings() {
+    app.innerHTML = renderSettingsPage();
+    attachSettingsListeners();
+    focusMainContent();
+    announceToScreenReader('Página de configurações carregada');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    currentPage = 'settings';
+}
+
+/**
  * Attach click and keyboard listeners to movie cards
  */
 function attachMovieCardListeners() {
@@ -1850,7 +1967,6 @@ function attachMediaToggleListeners() {
                 app.innerHTML = renderHome(trending, popular, topRated, genres, nowPlaying, upcoming);
                 attachMovieCardListeners();
                 attachGenrePillListeners();
-                attachMediaToggleListeners();
                 setupCardAnimationDelays();
                 setupHeroSlideshow();
                 setupCarouselNavigation();
@@ -2057,6 +2173,8 @@ function handleRoute() {
         } else {
             app.innerHTML = renderError('Coleção não encontrada');
         }
+    } else if (hash === '/settings') {
+        loadSettings();
     } else {
         app.innerHTML = render404Page();
     }
@@ -2154,6 +2272,88 @@ function setupPlaceholderAnimation() {
 }
 
 /**
+ * Attach event listeners to settings page controls
+ */
+function attachSettingsListeners() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const fontSizeSelect = document.getElementById('font-size');
+    const languageSelect = document.getElementById('language');
+    const adultToggle = document.getElementById('adult-toggle');
+    const toggleLabels = document.querySelectorAll('.toggle-label');
+
+    // Theme toggle
+    if (themeToggle) {
+        themeToggle.addEventListener('change', (e) => {
+            const isLight = e.target.checked;
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            applyTheme();
+            // Update label
+            if (toggleLabels[0]) {
+                toggleLabels[0].textContent = isLight ? 'Claro' : 'Escuro';
+            }
+        });
+    }
+
+    // Font size select
+    if (fontSizeSelect) {
+        fontSizeSelect.addEventListener('change', (e) => {
+            localStorage.setItem('fontSize', e.target.value);
+            applyFontSize();
+        });
+    }
+
+    // Language select
+    if (languageSelect) {
+        languageSelect.addEventListener('change', (e) => {
+            localStorage.setItem('language', e.target.value);
+        });
+    }
+
+    // Adult content toggle
+    if (adultToggle) {
+        adultToggle.addEventListener('change', (e) => {
+            localStorage.setItem('adultContent', e.target.checked ? 'true' : 'false');
+            // Update label
+            if (toggleLabels[1]) {
+                toggleLabels[1].textContent = e.target.checked ? 'Ativado' : 'Desativado';
+            }
+        });
+    }
+}
+
+/**
+ * Apply saved theme from localStorage
+ */
+function applyTheme() {
+    const theme = localStorage.getItem('theme') || 'dark';
+    const body = document.body;
+
+    if (theme === 'light') {
+        body.classList.add('light-theme');
+    } else {
+        body.classList.remove('light-theme');
+    }
+}
+
+/**
+ * Apply saved font size from localStorage
+ */
+function applyFontSize() {
+    const fontSize = localStorage.getItem('fontSize') || 'normal';
+    const body = document.body;
+
+    body.classList.remove('font-small', 'font-normal', 'font-large');
+
+    if (fontSize === 'small') {
+        body.classList.add('font-small');
+    } else if (fontSize === 'large') {
+        body.classList.add('font-large');
+    } else {
+        body.classList.add('font-normal');
+    }
+}
+
+/**
  * Initial route on page load
  */
 document.addEventListener('DOMContentLoaded', () => {
@@ -2162,5 +2362,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setupLazyLoading();
     setupOfflineDetection();
     setupPlaceholderAnimation();
+    applyTheme();
+    applyFontSize();
     handleRoute();
+    // Hide loading screen after initial render (1 second delay for smooth fade)
+    setTimeout(() => {
+        hideLoadingBar();
+    }, 1000);
 });
