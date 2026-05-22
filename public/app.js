@@ -2249,6 +2249,9 @@ function handleRoute() {
         } else {
             app.innerHTML = renderError('Coleção não encontrada');
         }
+    } else if (hash === '/login') {
+        loadLogin();
+        searchInput.value = '';
     } else if (hash === '/settings') {
         loadSettings();
     } else {
@@ -2440,6 +2443,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupPlaceholderAnimation();
     applyTheme();
     applyFontSize();
+    updateNavbar();
     handleRoute();
     // Hide loading screen after initial render (1 second delay for smooth fade)
     setTimeout(() => {
