@@ -698,6 +698,245 @@ function renderMediaTypeBadge(mediaType) {
 }
 
 /**
+ * Render person card for people page
+ */
+function renderPersonCard(person) {
+    if (!person || typeof person.id !== 'number') {
+        return '';
+    }
+
+    const name = person.name || '';
+    if (!name) return '';
+
+    const photo = person.profile_path
+        ? validateImageUrl(`https://image.tmdb.org/t/p/w185${person.profile_path}`)
+        : null;
+
+    const photoImg = photo
+        ? `<img src="${photo}" alt="${escapeHtml(name)}" class="person-photo" loading="lazy">`
+        : `<div class="person-photo" style="background-color: var(--bg-tertiary);"></div>`;
+
+    const knownFor = Array.isArray(person.known_for)
+        ? person.known_for.slice(0, 2).map(m => escapeHtml(m.title || m.name || '')).join(', ')
+        : '';
+
+    return `
+        <div class="person-card" data-person-id="${person.id}" tabindex="0" role="button" aria-label="${escapeHtml(name)}">
+            ${photoImg}
+            <div class="person-info">
+                <div class="person-name">${escapeHtml(name)}</div>
+                <div class="person-known-for">${escapeHtml(knownFor)}</div>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Render people page (popular people)
+ */
+function renderPeoplePage(people) {
+    if (!people || !Array.isArray(people.results)) {
+        return renderError('Dados inválidos recebidos do servidor');
+    }
+
+    const peopleList = people.results || [];
+
+    if (peopleList.length === 0) {
+        return `<div class="people-page">
+            <h1 class="people-title">Pessoas Populares</h1>
+            <div class="no-results">Nenhuma pessoa encontrada</div>
+        </div>`;
+    }
+
+    return `
+        <div class="people-page">
+            <h1 class="people-title">Pessoas Populares</h1>
+            <div class="people-grid">
+                ${peopleList.map(p => renderPersonCard(p)).join('')}
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Render person detail page
+ */
+function renderPersonDetail(person) {
+    if (!person || !person.name || typeof person.id !== 'number') {
+        return renderError('Pessoa não encontrada ou dados inválidos');
+    }
+
+    const photo = person.profile_path
+        ? validateImageUrl(`https://image.tmdb.org/t/p/w500${person.profile_path}`)
+        : null;
+
+    const photoImg = photo
+        ? `<img src="${photo}" alt="${escapeHtml(person.name)}" class="detail-person-photo" loading="lazy">`
+        : `<div class="detail-person-photo" style="background-color: var(--bg-tertiary);"></div>`;
+
+    const birthday = person.birthday ? `Nascimento: ${escapeHtml(person.birthday)}` : '';
+
+    // Movies
+    let moviesHtml = '';
+    if (Array.isArray(person.movie_credits?.cast) && person.movie_credits.cast.length > 0) {
+        const movies = person.movie_credits.cast.slice(0, 10);
+        const movieItems = movies.map(m => {
+            const title = m.title || '';
+            if (!title) return '';
+            return `
+                <div class="filmography-item" data-movie-id="${m.id}" data-media-type="movie" tabindex="0" role="button">
+                    <div class="filmography-title">${escapeHtml(title)}</div>
+                    <div class="filmography-character">${escapeHtml(m.character || '')}</div>
+                </div>
+            `;
+        }).join('');
+
+        if (movieItems) {
+            moviesHtml = `
+                <div class="filmography-section">
+                    <h3 class="filmography-section-title">Filmes</h3>
+                    <div class="filmography-list">
+                        ${movieItems}
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // TV Shows
+    let tvHtml = '';
+    if (Array.isArray(person.tv_credits?.cast) && person.tv_credits.cast.length > 0) {
+        const shows = person.tv_credits.cast.slice(0, 10);
+        const tvItems = shows.map(s => {
+            const name = s.name || '';
+            if (!name) return '';
+            return `
+                <div class="filmography-item" data-tv-id="${s.id}" data-media-type="tv" tabindex="0" role="button">
+                    <div class="filmography-title">${escapeHtml(name)}</div>
+                    <div class="filmography-character">${escapeHtml(s.character || '')}</div>
+                </div>
+            `;
+        }).join('');
+
+        if (tvItems) {
+            tvHtml = `
+                <div class="filmography-section">
+                    <h3 class="filmography-section-title">Séries</h3>
+                    <div class="filmography-list">
+                        ${tvItems}
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    return `
+        ${renderBreadcrumb(person.name)}
+
+        <button class="back-button" id="back-button" aria-label="Voltar para página anterior"><span style="display: inline-block;">←</span> Voltar</button>
+
+        <div class="person-detail-container">
+            <div class="person-detail-photo-wrapper">
+                ${photoImg}
+            </div>
+            <div class="person-detail-info">
+                <h1>${escapeHtml(person.name)}</h1>
+                <div class="person-detail-meta">
+                    ${birthday ? `<div class="person-birthday">${birthday}</div>` : ''}
+                </div>
+                <div class="person-biography">${escapeHtml(person.biography || 'Biografia não disponível')}</div>
+                ${moviesHtml}
+                ${tvHtml}
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Render trending day page
+ */
+function renderTrendingDay(items) {
+    if (!items || !Array.isArray(items.results)) {
+        return renderError('Dados inválidos recebidos do servidor');
+    }
+
+    const trendingList = items.results || [];
+
+    if (trendingList.length === 0) {
+        return `<div class="trending-day-page">
+            <h1 class="trending-day-title">Tendência do Dia</h1>
+            <div class="no-results">Nenhum item em tendência</div>
+        </div>`;
+    }
+
+    return `
+        <div class="trending-day-page">
+            <h1 class="trending-day-title">Tendência do Dia</h1>
+            <div class="trending-day-grid">
+                ${trendingList.map(m => {
+                    const card = renderMovieCard(m, true);
+                    return card;
+                }).join('')}
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Render collection page
+ */
+function renderCollectionPage(collection) {
+    if (!collection || !collection.name || typeof collection.id !== 'number') {
+        return renderError('Coleção não encontrada ou dados inválidos');
+    }
+
+    const parts = Array.isArray(collection.parts) ? collection.parts : [];
+
+    let partsHtml = '';
+    if (parts.length > 0) {
+        partsHtml = `
+            <div class="collection-parts">
+                ${parts.map((movie, index) => {
+                    const title = movie.title || '';
+                    const poster = movie.poster_path
+                        ? validateImageUrl(`https://image.tmdb.org/t/p/w342${movie.poster_path}`)
+                        : null;
+
+                    const posterImg = poster
+                        ? `<img src="${poster}" alt="${escapeHtml(title)}" class="collection-poster" loading="lazy">`
+                        : `<div class="collection-poster" style="background-color: var(--bg-tertiary);"></div>`;
+
+                    return `
+                        <div class="collection-item" data-movie-id="${movie.id}" tabindex="0" role="button">
+                            <div class="collection-number">${index + 1}</div>
+                            <div class="collection-poster-container">
+                                ${posterImg}
+                            </div>
+                            <div class="collection-item-info">
+                                <div class="collection-item-title">${escapeHtml(title)}</div>
+                                ${movie.release_date ? `<div class="collection-item-year">${escapeHtml(movie.release_date.split('-')[0])}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    return `
+        ${renderBreadcrumb(collection.name)}
+
+        <button class="back-button" id="back-button" aria-label="Voltar para página anterior"><span style="display: inline-block;">←</span> Voltar</button>
+
+        <div class="collection-detail">
+            <h1>${escapeHtml(collection.name)}</h1>
+            ${collection.overview ? `<div class="collection-overview">${escapeHtml(collection.overview)}</div>` : ''}
+            ${partsHtml}
+        </div>
+    `;
+}
+
+/**
  * Render a single movie card
  */
 function renderMovieCard(movie, isTrending = false) {
@@ -809,6 +1048,14 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
         </div>
     `;
 
+    const quickLinks = `
+        <div class="quick-links-section">
+            <a href="#/people" class="quick-link-btn">👥 Pessoas Populares</a>
+            <a href="#/trending/day" class="quick-link-btn">🔥 Tendência de Hoje</a>
+            <a href="#/top" class="quick-link-btn">⭐ Top 20</a>
+        </div>
+    `;
+
     let genresHtml = '';
     if (genresData && Array.isArray(genresData.genres)) {
         const genreTags = genresData.genres.slice(0, 15).map(g =>
@@ -834,6 +1081,8 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
         ${heroBanner}
 
         ${mediaToggle}
+
+        ${quickLinks}
 
         ${genresHtml}
 
@@ -1009,7 +1258,7 @@ function renderMovieDetail(movie) {
                     : `<div class="cast-photo" style="background-color: var(--bg-tertiary);"></div>`;
 
                 return `
-                    <div class="cast-member">
+                    <div class="cast-member" data-person-id="${actor.id}" tabindex="0" role="button" aria-label="${escapeHtml(actor.name)}">
                         ${photoImg}
                         <div class="cast-name">${escapeHtml(actor.name)}</div>
                         <div class="cast-character">${escapeHtml(actor.character || '')}</div>
@@ -1271,6 +1520,7 @@ async function loadMovieDetail(movieId) {
 
         attachMovieCardListeners();
         attachReviewExpandListeners();
+        attachPersonCardListeners();
         setupCarouselNavigation();
         setupCarouselTouch();
         focusMainContent();
@@ -1340,6 +1590,122 @@ async function loadTopList() {
         app.innerHTML = renderError(error.message);
         focusMainContent();
         announceToScreenReader(`Erro ao carregar top lista: ${error.message}`);
+    }
+}
+
+/**
+ * Load popular people page
+ */
+async function loadPeople() {
+    app.innerHTML = renderLoading();
+
+    try {
+        const data = await apiFetch('/api/people/popular');
+        app.innerHTML = renderPeoplePage(data);
+        attachPersonCardListeners();
+        focusMainContent();
+        announceToScreenReader('Pessoas populares carregadas');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        currentPage = 'people';
+    } catch (error) {
+        app.innerHTML = renderError(error.message);
+        focusMainContent();
+        announceToScreenReader(`Erro ao carregar pessoas: ${error.message}`);
+    }
+}
+
+/**
+ * Load person detail page
+ */
+async function loadPersonDetail(personId) {
+    const validatedId = validateMovieId(personId);
+
+    if (validatedId === null) {
+        app.innerHTML = renderError('ID de pessoa inválido');
+        focusMainContent();
+        return;
+    }
+
+    app.innerHTML = renderLoading();
+
+    try {
+        const person = await apiFetch(`/api/person/${validatedId}`);
+        app.innerHTML = renderPersonDetail(person);
+
+        const backButton = document.getElementById('back-button');
+        if (backButton) {
+            backButton.addEventListener('click', () => {
+                window.history.back();
+            });
+        }
+
+        attachFilmographyListeners();
+        focusMainContent();
+        announceToScreenReader(`Detalhes da pessoa: ${person.name}`);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        currentPage = 'person-detail';
+    } catch (error) {
+        app.innerHTML = renderError(error.message);
+        focusMainContent();
+        announceToScreenReader(`Erro ao carregar pessoa: ${error.message}`);
+    }
+}
+
+/**
+ * Load trending today page
+ */
+async function loadTrendingDay() {
+    app.innerHTML = renderLoading();
+
+    try {
+        const data = await apiFetch('/api/trending/day');
+        app.innerHTML = renderTrendingDay(data);
+        attachMovieCardListeners();
+        focusMainContent();
+        announceToScreenReader('Tendência do dia carregada');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        currentPage = 'trending-day';
+    } catch (error) {
+        app.innerHTML = renderError(error.message);
+        focusMainContent();
+        announceToScreenReader(`Erro ao carregar tendência do dia: ${error.message}`);
+    }
+}
+
+/**
+ * Load collection page
+ */
+async function loadCollectionPage(collectionId) {
+    const validatedId = validateMovieId(collectionId);
+
+    if (validatedId === null) {
+        app.innerHTML = renderError('ID de coleção inválido');
+        focusMainContent();
+        return;
+    }
+
+    app.innerHTML = renderLoading();
+
+    try {
+        const collection = await apiFetch(`/api/collection/${validatedId}`);
+        app.innerHTML = renderCollectionPage(collection);
+
+        const backButton = document.getElementById('back-button');
+        if (backButton) {
+            backButton.addEventListener('click', () => {
+                window.history.back();
+            });
+        }
+
+        attachCollectionListeners();
+        focusMainContent();
+        announceToScreenReader(`Coleção carregada: ${collection.name}`);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        currentPage = 'collection';
+    } catch (error) {
+        app.innerHTML = renderError(error.message);
+        focusMainContent();
+        announceToScreenReader(`Erro ao carregar coleção: ${error.message}`);
     }
 }
 
@@ -1506,6 +1872,76 @@ function attachReviewExpandListeners() {
     });
 }
 
+/**
+ * Attach click listeners to person cards
+ */
+function attachPersonCardListeners() {
+    document.querySelectorAll('.person-card').forEach(card => {
+        const handleCardActivation = () => {
+            const personId = card.dataset.personId;
+            if (personId) {
+                window.location.hash = `#/person/${personId}`;
+            }
+        };
+
+        card.addEventListener('click', handleCardActivation);
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleCardActivation();
+            }
+        });
+    });
+}
+
+/**
+ * Attach click listeners to filmography items
+ */
+function attachFilmographyListeners() {
+    document.querySelectorAll('.filmography-item').forEach(item => {
+        const handleItemActivation = () => {
+            const movieId = item.dataset.movieId;
+            const tvId = item.dataset.tvId;
+
+            if (movieId) {
+                window.location.hash = `#/movie/${movieId}`;
+            } else if (tvId) {
+                window.location.hash = `#/tv/${tvId}`;
+            }
+        };
+
+        item.addEventListener('click', handleItemActivation);
+        item.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleItemActivation();
+            }
+        });
+    });
+}
+
+/**
+ * Attach click listeners to collection items
+ */
+function attachCollectionListeners() {
+    document.querySelectorAll('.collection-item').forEach(item => {
+        const handleItemActivation = () => {
+            const movieId = item.dataset.movieId;
+            if (movieId) {
+                window.location.hash = `#/movie/${movieId}`;
+            }
+        };
+
+        item.addEventListener('click', handleItemActivation);
+        item.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleItemActivation();
+            }
+        });
+    });
+}
+
 // ============ ROUTING ============
 
 /**
@@ -1562,6 +1998,26 @@ function handleRoute() {
             loadTVDetail(tvId);
         } else {
             app.innerHTML = renderError('Série não encontrada');
+        }
+    } else if (hash === '/people') {
+        loadPeople();
+    } else if (hash.startsWith('/person/')) {
+        const personId = hash.slice(8);
+        const validatedId = validateMovieId(personId);
+        if (validatedId !== null) {
+            loadPersonDetail(personId);
+        } else {
+            app.innerHTML = renderError('Pessoa não encontrada');
+        }
+    } else if (hash === '/trending/day') {
+        loadTrendingDay();
+    } else if (hash.startsWith('/collection/')) {
+        const collectionId = hash.slice(12);
+        const validatedId = validateMovieId(collectionId);
+        if (validatedId !== null) {
+            loadCollectionPage(collectionId);
+        } else {
+            app.innerHTML = renderError('Coleção não encontrada');
         }
     } else {
         app.innerHTML = render404Page();
