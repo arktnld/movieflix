@@ -14,6 +14,7 @@ function escapeHtml(text) {
  * Fetch wrapper with error handling
  */
 async function apiFetch(url) {
+    showLoadingBar();
     try {
         const response = await fetch(url);
 
@@ -22,11 +23,135 @@ async function apiFetch(url) {
             throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
         }
 
-        return await response.json();
+        const data = await response.json();
+        hideLoadingBar();
+        return data;
     } catch (error) {
+        hideLoadingBar();
         console.error('API Error:', error);
+        showToast(error.message, 'error');
         throw error;
     }
+}
+
+/**
+ * Show loading bar
+ */
+function showLoadingBar() {
+    const loadingBar = document.getElementById('loading-bar');
+    if (loadingBar) {
+        loadingBar.classList.remove('complete');
+        loadingBar.classList.add('active');
+    }
+}
+
+/**
+ * Hide loading bar
+ */
+function hideLoadingBar() {
+    const loadingBar = document.getElementById('loading-bar');
+    if (loadingBar) {
+        loadingBar.classList.remove('active');
+        loadingBar.classList.add('complete');
+    }
+}
+
+/**
+ * Show toast notification
+ */
+function showToast(message, type = 'error') {
+    const toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <span>${escapeHtml(message)}</span>
+        <button class="toast-close">✕</button>
+    `;
+
+    const closeBtn = toast.querySelector('.toast-close');
+    closeBtn.addEventListener('click', () => {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 300);
+    });
+
+    toastContainer.appendChild(toast);
+
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.classList.add('removing');
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, 5000);
+}
+
+/**
+ * Setup scroll-to-top button
+ */
+function setupScrollToTop() {
+    const scrollBtn = document.getElementById('scroll-to-top');
+    if (!scrollBtn) return;
+
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            scrollBtn.classList.add('visible');
+        } else {
+            scrollBtn.classList.remove('visible');
+        }
+    }, { passive: true });
+
+    scrollBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+/**
+ * Setup smart navbar that hides on scroll down
+ */
+function setupSmartNavbar() {
+    const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+
+    let lastScrollY = 0;
+    let scrollDirection = 'up';
+
+    window.addEventListener('scroll', () => {
+        const currentScrollY = window.scrollY;
+
+        if (currentScrollY > lastScrollY && currentScrollY > 100) {
+            scrollDirection = 'down';
+            navbar.classList.add('hidden');
+        } else {
+            scrollDirection = 'up';
+            navbar.classList.remove('hidden');
+        }
+
+        lastScrollY = currentScrollY;
+    }, { passive: true });
+}
+
+/**
+ * Setup lazy loading for images
+ */
+function setupLazyLoading() {
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                if (img.dataset.src) {
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                }
+                img.classList.remove('lazy');
+                observer.unobserve(img);
+            }
+        });
+    }, { rootMargin: '50px' });
+
+    document.querySelectorAll('img[data-src]').forEach(img => {
+        imageObserver.observe(img);
+    });
 }
 
 /**
@@ -116,6 +241,19 @@ function setupCastAnimationDelays() {
     });
 }
 
+/**
+ * Render breadcrumb navigation
+ */
+function renderBreadcrumb(movieTitle) {
+    return `
+        <div class="breadcrumb">
+            <a class="breadcrumb-link" onclick="window.location.hash='#/'; return false;">Home</a>
+            <span>›</span>
+            <span>${escapeHtml(movieTitle)}</span>
+        </div>
+    `;
+}
+
 // ============ UI RENDERING ============
 
 /**
@@ -150,7 +288,7 @@ function renderMovieCard(movie, isTrending = false) {
         : null;
 
     const posterImg = poster
-        ? `<img src="${poster}" alt="${escapeHtml(movie.title)}" class="movie-poster">`
+        ? `<img src="${poster}" alt="${escapeHtml(movie.title)}" class="movie-poster" loading="lazy">`
         : `<div class="movie-poster" style="background-color: var(--bg-tertiary);"></div>`;
 
     const rating = renderStarRating(movie.vote_average);
@@ -179,7 +317,7 @@ function renderHome(trendingData, popularData, topRatedData) {
         const backdropUrl = `https://image.tmdb.org/t/p/w1280${trendingMovie.backdrop_path}`;
         heroBanner = `
             <div class="hero-banner">
-                <img src="${backdropUrl}" alt="Hero" class="hero-banner-image">
+                <img src="${backdropUrl}" alt="Hero" class="hero-banner-image" loading="lazy">
                 <div class="hero-overlay">
                     <div class="hero-info">
                         <div class="hero-title">${escapeHtml(trendingMovie.title)}</div>
@@ -255,11 +393,11 @@ function renderMovieDetail(movie) {
         : null;
 
     const backdropImg = backdrop
-        ? `<img src="${backdrop}" alt="Backdrop" class="detail-backdrop-image">`
+        ? `<img src="${backdrop}" alt="Backdrop" class="detail-backdrop-image" loading="lazy">`
         : `<div class="detail-backdrop-image" style="background-color: var(--bg-tertiary);"></div>`;
 
     const posterImg = poster
-        ? `<img src="${poster}" alt="Poster" class="detail-poster">`
+        ? `<img src="${poster}" alt="Poster" class="detail-poster" loading="lazy">`
         : `<div class="detail-poster" style="background-color: var(--bg-tertiary);"></div>`;
 
     const rating = renderStarRating(movie.vote_average);
@@ -276,7 +414,7 @@ function renderMovieDetail(movie) {
                 : null;
 
             const photoImg = photo
-                ? `<img src="${photo}" alt="${escapeHtml(actor.name)}" class="cast-photo">`
+                ? `<img src="${photo}" alt="${escapeHtml(actor.name)}" class="cast-photo" loading="lazy">`
                 : `<div class="cast-photo" style="background-color: var(--bg-tertiary);"></div>`;
 
             return `
@@ -319,6 +457,8 @@ function renderMovieDetail(movie) {
     }
 
     return `
+        ${renderBreadcrumb(movie.title)}
+
         <button class="back-button" id="back-button"><span style="display: inline-block;">←</span> Voltar</button>
 
         <div class="detail-backdrop">
@@ -387,12 +527,9 @@ async function loadSearch(query) {
     app.innerHTML = renderLoading();
 
     try {
-        await transitionPage();
         const results = await apiFetch(`/api/search?q=${encodeURIComponent(query)}`);
         app.innerHTML = renderSearchResults(query, results);
         attachMovieCardListeners();
-        setupCardAnimationDelays();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
         currentPage = 'search';
     } catch (error) {
         app.innerHTML = renderError(error.message);
@@ -406,7 +543,6 @@ async function loadMovieDetail(movieId) {
     app.innerHTML = renderLoading();
 
     try {
-        await transitionPage();
         const movie = await apiFetch(`/api/movie/${movieId}`);
         app.innerHTML = renderMovieDetail(movie);
 
@@ -417,8 +553,6 @@ async function loadMovieDetail(movieId) {
             });
         }
 
-        setupCastAnimationDelays();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
         currentPage = 'detail';
     } catch (error) {
         app.innerHTML = renderError(error.message);
@@ -477,6 +611,18 @@ searchInput.addEventListener('input', (e) => {
     debouncedSearch(e.target.value);
 });
 
+/**
+ * Handle Enter key for immediate search (bypass debounce)
+ */
+searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        const query = searchInput.value.trim();
+        if (query) {
+            window.location.hash = `#/search/${encodeURIComponent(query)}`;
+        }
+    }
+});
+
 searchBtn.addEventListener('click', () => {
     const query = searchInput.value.trim();
     if (query) {
@@ -489,6 +635,15 @@ logo.addEventListener('click', () => {
 });
 
 /**
+ * Handle Escape key to navigate home
+ */
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        window.location.hash = '#/';
+    }
+});
+
+/**
  * Listen for hash changes and route
  */
 window.addEventListener('hashchange', handleRoute);
@@ -496,4 +651,9 @@ window.addEventListener('hashchange', handleRoute);
 /**
  * Initial route on page load
  */
-document.addEventListener('DOMContentLoaded', handleRoute);
+document.addEventListener('DOMContentLoaded', () => {
+    setupScrollToTop();
+    setupSmartNavbar();
+    setupLazyLoading();
+    handleRoute();
+});

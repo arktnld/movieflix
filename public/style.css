@@ -371,7 +371,7 @@ h1, h2, h3, h4, h5, h6 {
     }
 }
 
-@media (prefers-reduced-motion: prefer-reduce) {
+@media (prefers-reduced-motion: reduce) {
     .movie-card {
         opacity: 1;
         animation: none;
@@ -937,7 +937,7 @@ h1, h2, h3, h4, h5, h6 {
     z-index: 99;
 }
 
-.scroll-to-top.show {
+.scroll-to-top.visible {
     display: flex;
 }
 
@@ -993,11 +993,11 @@ h1, h2, h3, h4, h5, h6 {
 
 .toast {
     padding: var(--spacing-md);
-    border-radius: var(--border-radius-lg);
+    border-radius: 12px;
     box-shadow: var(--shadow-2);
     background: var(--bg-secondary);
     color: var(--text-primary);
-    border-left: 4px solid var(--accent-color);
+    border-left: 4px solid var(--accent);
     min-width: 250px;
     max-width: 400px;
     pointer-events: auto;
@@ -1069,7 +1069,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .breadcrumb a {
-    color: var(--accent-color);
+    color: var(--accent);
     text-decoration: none;
     cursor: pointer;
     transition: color 0.2s ease;

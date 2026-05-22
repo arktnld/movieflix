@@ -3,10 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0d0d0d">
+    <meta name="description" content="MovieFlix - Seu Cinema Favorito. Descubra filmes em tendência, populares e melhor avaliados usando a API TMDB.">
+    <meta property="og:title" content="MovieFlix - Seu Cinema Favorito">
+    <meta property="og:description" content="Descubra filmes em tendência, populares e melhor avaliados usando a API TMDB.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://image.tmdb.org/t/p/original/wwemzKWzjKYJFfCeiWcinyuqzGJ.jpg">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%23ff6b6b'>🎬</text></svg>">
     <title>MovieFlix - Seu Cinema Favorito</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="loading-bar" class="loading-bar"></div>
+
     <nav class="navbar">
         <div class="navbar-container">
             <div class="logo">🎬 MovieFlix</div>
@@ -24,6 +33,27 @@
     </nav>
 
     <main id="app" class="app-container"></main>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <button id="scroll-to-top" class="scroll-to-top" aria-label="Voltar ao topo" title="Voltar ao topo">↑</button>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="footer-title">MovieFlix</div>
+                <p class="footer-text">Seu Cinema Favorito</p>
+            </div>
+            <div class="footer-section">
+                <div class="footer-subtitle">API</div>
+                <p class="footer-text">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+            </div>
+            <div class="footer-section">
+                <div class="footer-subtitle">Créditos</div>
+                <p class="footer-text">&copy; 2026 MovieFlix. Desenvolvido com <span class="heart">❤️</span> Vanilla JS.</p>
+            </div>
+        </div>
+    </footer>
 
     <script type="module" src="app.js"></script>
 </body>
