@@ -351,6 +351,49 @@ h1, h2, h3, h4, h5, h6 {
     line-height: 1.6;
 }
 
+/* ============ GENRES SECTION ============ */
+.genres-section {
+    margin-bottom: var(--spacing-3xl);
+}
+
+.genres-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.genre-pill {
+    padding: 0.5rem 1.25rem;
+    background-color: var(--bg-tertiary);
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .genre-pill:hover {
+        background-color: var(--accent);
+        color: var(--text-primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-2);
+    }
+
+    .genre-pill:active {
+        transform: translateY(0);
+    }
+}
+
+.genre-pill:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
 /* ============ CAROUSEL SECTIONS ============ */
 .carousel-section {
     margin-bottom: var(--spacing-3xl);
@@ -535,12 +578,41 @@ h1, h2, h3, h4, h5, h6 {
     }
 }
 
-.search-page-title {
+.search-page-title,
+.genre-page-title {
     font-size: 1.75rem;
     font-weight: 700;
     margin-bottom: var(--spacing-lg);
     color: var(--text-primary);
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ============ GENRE RESULTS ============ */
+.genre-results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--spacing-md);
+}
+
+@media (max-width: 768px) {
+    .genre-results {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-sm);
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .genre-results {
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-md);
+    }
+}
+
+@media (min-width: 1025px) {
+    .genre-results {
+        grid-template-columns: repeat(6, 1fr);
+        gap: var(--spacing-md);
+    }
 }
 
 /* ============ MOVIE DETAIL PAGE ============ */
@@ -755,7 +827,9 @@ h1, h2, h3, h4, h5, h6 {
     margin-top: var(--spacing-lg);
 }
 
-.videos-title {
+.videos-title,
+.reviews-title,
+.similar-title {
     font-size: 1.5rem;
     margin-bottom: var(--spacing-md);
     color: var(--text-primary);
@@ -781,6 +855,134 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
     height: 100%;
     border: none;
+}
+
+/* ============ REVIEWS SECTION ============ */
+.reviews-section {
+    margin-top: var(--spacing-lg);
+}
+
+.reviews-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.review-card {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--bg-quaternary);
+    border-radius: 12px;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+}
+
+.review-author {
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+}
+
+.review-rating {
+    color: var(--rating-gold);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.review-text {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    flex: 1;
+}
+
+.review-expand-btn {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0;
+    transition: color 0.3s ease;
+    text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .review-expand-btn:hover {
+        color: var(--accent-light);
+    }
+}
+
+/* ============ SIMILAR MOVIES SECTION ============ */
+.similar-section {
+    margin-top: var(--spacing-lg);
+}
+
+/* ============ PAGINATION ============ */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-3xl);
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    padding: 0.75rem 1.25rem;
+    background-color: var(--bg-tertiary);
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .pagination-btn:hover {
+        background: var(--accent-gradient);
+        color: var(--text-primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-2);
+    }
+
+    .pagination-btn:active {
+        transform: translateY(0);
+    }
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--bg-quaternary);
+    border-color: var(--text-tertiary);
+    color: var(--text-tertiary);
+}
+
+.pagination-btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+    background-color: var(--bg-quaternary);
+}
+
+.pagination-info {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 0 var(--spacing-sm);
 }
 
 /* ============ LOADING & ERROR STATES ============ */

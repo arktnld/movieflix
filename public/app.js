@@ -409,7 +409,7 @@ function renderMovieCard(movie, isTrending = false) {
 /**
  * Render home page with hero banner and carousels
  */
-function renderHome(trendingData, popularData, topRatedData) {
+function renderHome(trendingData, popularData, topRatedData, genresData, nowPlayingData, upcomingData) {
     if (!trendingData || !Array.isArray(trendingData.results)) {
         return renderError('Dados inválidos recebidos do servidor');
     }
@@ -435,17 +435,51 @@ function renderHome(trendingData, popularData, topRatedData) {
         }
     }
 
+    let genresHtml = '';
+    if (genresData && Array.isArray(genresData.genres)) {
+        const genreTags = genresData.genres.slice(0, 15).map(g =>
+            `<button class="genre-pill" data-genre-id="${g.id}" role="button" tabindex="0">${escapeHtml(g.name)}</button>`
+        ).join('');
+
+        genresHtml = `
+            <div class="genres-section">
+                <div class="section-title">Explorar por Gênero</div>
+                <div class="genres-container">
+                    ${genreTags}
+                </div>
+            </div>
+        `;
+    }
+
     const trendingMovies = Array.isArray(trendingData.results) ? trendingData.results.slice(0, 20) : [];
     const popularMovies = Array.isArray(popularData?.results) ? popularData.results.slice(0, 20) : [];
     const topRatedMovies = Array.isArray(topRatedData?.results) ? topRatedData.results.slice(0, 20) : [];
+    const nowPlayingMovies = Array.isArray(nowPlayingData?.results) ? nowPlayingData.results.slice(0, 20) : [];
+    const upcomingMovies = Array.isArray(upcomingData?.results) ? upcomingData.results.slice(0, 20) : [];
 
     return `
         ${heroBanner}
+
+        ${genresHtml}
+
+        <div class="carousel-section">
+            <div class="section-title">Em Cartaz</div>
+            <div class="carousel-container">
+                ${nowPlayingMovies.map(m => renderMovieCard(m, false)).join('')}
+            </div>
+        </div>
 
         <div class="carousel-section">
             <div class="section-title">Tendência da Semana</div>
             <div class="carousel-container">
                 ${trendingMovies.map(m => renderMovieCard(m, true)).join('')}
+            </div>
+        </div>
+
+        <div class="carousel-section">
+            <div class="section-title">Próximos Lançamentos</div>
+            <div class="carousel-container">
+                ${upcomingMovies.map(m => renderMovieCard(m, false)).join('')}
             </div>
         </div>
 
@@ -468,13 +502,25 @@ function renderHome(trendingData, popularData, topRatedData) {
 /**
  * Render search results page
  */
-function renderSearchResults(query, results) {
+function renderSearchResults(query, results, page = 1) {
     if (!results || !Array.isArray(results.results)) {
         return renderError('Resposta inválida do servidor');
     }
 
     const movies = results.results || [];
     const sanitizedQuery = escapeHtml(query);
+    const totalPages = results.total_pages || 1;
+
+    let paginationHtml = '';
+    if (totalPages > 1) {
+        paginationHtml = `
+            <div class="pagination">
+                ${page > 1 ? `<button class="pagination-btn" data-page="${page - 1}" data-search-query="${sanitizedQuery}">← Anterior</button>` : ''}
+                <span class="pagination-info">Página ${page} de ${totalPages}</span>
+                ${page < totalPages ? `<button class="pagination-btn" data-page="${page + 1}" data-search-query="${sanitizedQuery}">Próxima →</button>` : ''}
+            </div>
+        `;
+    }
 
     if (movies.length === 0) {
         return `
@@ -488,6 +534,46 @@ function renderSearchResults(query, results) {
         <div class="search-results">
             ${movies.map(m => renderMovieCard(m)).join('')}
         </div>
+        ${paginationHtml}
+    `;
+}
+
+/**
+ * Render genre page with movies
+ */
+function renderGenrePage(genreId, genreName, movies, page = 1) {
+    if (!movies || !Array.isArray(movies.results)) {
+        return renderError('Resposta inválida do servidor');
+    }
+
+    const movieList = movies.results || [];
+    const totalPages = movies.total_pages || 1;
+    const escapedGenreName = escapeHtml(genreName);
+
+    let paginationHtml = '';
+    if (totalPages > 1) {
+        paginationHtml = `
+            <div class="pagination">
+                ${page > 1 ? `<button class="pagination-btn" data-page="${page - 1}" data-genre-id="${genreId}">← Anterior</button>` : ''}
+                <span class="pagination-info">Página ${page} de ${totalPages}</span>
+                ${page < totalPages ? `<button class="pagination-btn" data-page="${page + 1}" data-genre-id="${genreId}">Próxima →</button>` : ''}
+            </div>
+        `;
+    }
+
+    if (movieList.length === 0) {
+        return `
+            <div class="genre-page-title">${escapedGenreName}</div>
+            <div class="no-results">Nenhum filme encontrado neste gênero</div>
+        `;
+    }
+
+    return `
+        <div class="genre-page-title">${escapedGenreName}</div>
+        <div class="genre-results">
+            ${movieList.map(m => renderMovieCard(m)).join('')}
+        </div>
+        ${paginationHtml}
     `;
 }
 
@@ -580,6 +666,52 @@ function renderMovieDetail(movie) {
         `;
     }
 
+    let reviewsHtml = '';
+    if (Array.isArray(movie.reviews?.results) && movie.reviews.results.length > 0) {
+        const reviews = movie.reviews.results.slice(0, 5);
+        const reviewCards = reviews.map(review => {
+            const authorName = escapeHtml(review.author || 'Anônimo');
+            const rating = review.author_details?.rating ? `★ ${review.author_details.rating.toFixed(1)}` : '';
+            const content = review.content || '';
+            const excerpt = content.length > 300
+                ? `${escapeHtml(content.substring(0, 300))}...`
+                : escapeHtml(content);
+
+            return `
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-author">${authorName}</div>
+                        ${rating ? `<div class="review-rating">${rating}</div>` : ''}
+                    </div>
+                    <div class="review-text">${excerpt}</div>
+                    <button class="review-expand-btn" data-review-content="${content.replace(/"/g, '&quot;')}" aria-label="Expandir resenha">Leia mais</button>
+                </div>
+            `;
+        }).join('');
+
+        reviewsHtml = `
+            <div class="reviews-section">
+                <div class="reviews-title">Resenhas</div>
+                <div class="reviews-container">
+                    ${reviewCards}
+                </div>
+            </div>
+        `;
+    }
+
+    let similarHtml = '';
+    if (Array.isArray(movie.similar?.results) && movie.similar.results.length > 0) {
+        const similarMovies = movie.similar.results.slice(0, 10);
+        similarHtml = `
+            <div class="similar-section">
+                <div class="similar-title">Filmes Similares</div>
+                <div class="carousel-container">
+                    ${similarMovies.map(m => renderMovieCard(m)).join('')}
+                </div>
+            </div>
+        `;
+    }
+
     return `
         ${renderBreadcrumb(movie.title)}
 
@@ -600,6 +732,8 @@ function renderMovieDetail(movie) {
                 <div class="detail-overview">${escapeHtml(movie.overview || 'Sem sinopse disponível')}</div>
                 ${castHtml}
                 ${videoHtml}
+                ${reviewsHtml}
+                ${similarHtml}
             </div>
         </div>
     `;
@@ -622,14 +756,18 @@ async function loadHome() {
 
     try {
         await transitionPage();
-        const [trending, popular, topRated] = await Promise.all([
+        const [trending, popular, topRated, genres, nowPlaying, upcoming] = await Promise.all([
             apiFetch('/api/trending'),
             apiFetch('/api/popular'),
-            apiFetch('/api/top-rated')
+            apiFetch('/api/top-rated'),
+            apiFetch('/api/genres'),
+            apiFetch('/api/now-playing'),
+            apiFetch('/api/upcoming')
         ]);
 
-        app.innerHTML = renderHome(trending, popular, topRated);
+        app.innerHTML = renderHome(trending, popular, topRated, genres, nowPlaying, upcoming);
         attachMovieCardListeners();
+        attachGenrePillListeners();
         setupCardAnimationDelays();
         setupParallax();
         focusMainContent();
@@ -646,7 +784,7 @@ async function loadHome() {
 /**
  * Load and render search results
  */
-async function loadSearch(query) {
+async function loadSearch(query, page = 1) {
     const validatedQuery = validateSearchQuery(query);
 
     if (!validatedQuery) {
@@ -657,9 +795,10 @@ async function loadSearch(query) {
     app.innerHTML = renderLoading();
 
     try {
-        const results = await apiFetch(`/api/search?q=${encodeURIComponent(validatedQuery)}`);
-        app.innerHTML = renderSearchResults(validatedQuery, results);
+        const results = await apiFetch(`/api/search?q=${encodeURIComponent(validatedQuery)}&page=${page}`);
+        app.innerHTML = renderSearchResults(validatedQuery, results, page);
         attachMovieCardListeners();
+        attachPaginationListeners();
         focusMainContent();
         announceToScreenReader(`Resultados de busca para ${validatedQuery}`);
         currentPage = 'search';
@@ -667,6 +806,40 @@ async function loadSearch(query) {
         app.innerHTML = renderError(error.message);
         focusMainContent();
         announceToScreenReader(`Erro ao buscar: ${error.message}`);
+    }
+}
+
+/**
+ * Load and render genre page
+ */
+async function loadGenre(genreId, page = 1) {
+    const validatedId = parseInt(genreId, 10);
+    if (isNaN(validatedId) || validatedId <= 0) {
+        app.innerHTML = renderError('ID de gênero inválido');
+        focusMainContent();
+        return;
+    }
+
+    app.innerHTML = renderLoading();
+
+    try {
+        const [movies, genres] = await Promise.all([
+            apiFetch(`/api/discover?genre=${validatedId}&page=${page}`),
+            apiFetch('/api/genres')
+        ]);
+
+        const genreName = genres.genres?.find(g => g.id === validatedId)?.name || 'Desconhecido';
+        app.innerHTML = renderGenrePage(validatedId, genreName, movies, page);
+        attachMovieCardListeners();
+        attachPaginationListeners();
+        focusMainContent();
+        announceToScreenReader(`Filmes do gênero ${genreName}`);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        currentPage = 'genre';
+    } catch (error) {
+        app.innerHTML = renderError(error.message);
+        focusMainContent();
+        announceToScreenReader(`Erro ao carregar gênero: ${error.message}`);
     }
 }
 
@@ -685,8 +858,19 @@ async function loadMovieDetail(movieId) {
     app.innerHTML = renderLoading();
 
     try {
-        const movie = await apiFetch(`/api/movie/${validatedId}`);
-        app.innerHTML = renderMovieDetail(movie);
+        const [movie, similar, reviews] = await Promise.all([
+            apiFetch(`/api/movie/${validatedId}`),
+            apiFetch(`/api/movie/${validatedId}/similar`),
+            apiFetch(`/api/movie/${validatedId}/reviews`)
+        ]);
+
+        const enrichedMovie = {
+            ...movie,
+            similar,
+            reviews
+        };
+
+        app.innerHTML = renderMovieDetail(enrichedMovie);
 
         const backButton = document.getElementById('back-button');
         if (backButton) {
@@ -695,6 +879,8 @@ async function loadMovieDetail(movieId) {
             });
         }
 
+        attachMovieCardListeners();
+        attachReviewExpandListeners();
         focusMainContent();
         announceToScreenReader(`Detalhes do filme: ${movie.title}`);
         currentPage = 'detail';
@@ -725,6 +911,69 @@ function attachMovieCardListeners() {
     });
 }
 
+/**
+ * Attach listeners to genre pills
+ */
+function attachGenrePillListeners() {
+    document.querySelectorAll('.genre-pill').forEach(pill => {
+        const handleGenreActivation = () => {
+            const genreId = pill.dataset.genreId;
+            window.location.hash = `#/genre/${genreId}`;
+        };
+
+        pill.addEventListener('click', handleGenreActivation);
+        pill.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleGenreActivation();
+            }
+        });
+    });
+}
+
+/**
+ * Attach listeners to pagination buttons
+ */
+function attachPaginationListeners() {
+    document.querySelectorAll('.pagination-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const page = btn.dataset.page;
+            const genreId = btn.dataset.genreId;
+            const searchQuery = btn.dataset.searchQuery;
+
+            if (genreId) {
+                window.location.hash = `#/genre/${genreId}?page=${page}`;
+            } else if (searchQuery) {
+                window.location.hash = `#/search/${encodeURIComponent(searchQuery)}?page=${page}`;
+            }
+        });
+    });
+}
+
+/**
+ * Attach listeners to review expand buttons
+ */
+function attachReviewExpandListeners() {
+    document.querySelectorAll('.review-expand-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const content = btn.dataset.reviewContent;
+            const reviewCard = btn.closest('.review-card');
+            const reviewText = reviewCard.querySelector('.review-text');
+
+            if (reviewText.textContent.includes('...')) {
+                reviewText.textContent = content;
+                btn.textContent = 'Ler menos';
+            } else {
+                const excerpt = content.length > 300
+                    ? `${content.substring(0, 300)}...`
+                    : content;
+                reviewText.textContent = excerpt;
+                btn.textContent = 'Leia mais';
+            }
+        });
+    });
+}
+
 // ============ ROUTING ============
 
 /**
@@ -737,7 +986,11 @@ function handleRoute() {
         loadHome();
         searchInput.value = '';
     } else if (hash.startsWith('/search/')) {
-        const encodedQuery = hash.slice(8);
+        const parts = hash.slice(8).split('?');
+        const encodedQuery = parts[0];
+        const pageParam = new URLSearchParams(parts[1] || '').get('page') || '1';
+        const page = Math.max(1, parseInt(pageParam, 10));
+
         let query = '';
         try {
             query = decodeURIComponent(encodedQuery);
@@ -749,10 +1002,17 @@ function handleRoute() {
         const validatedQuery = validateSearchQuery(query);
         if (validatedQuery) {
             searchInput.value = validatedQuery;
-            loadSearch(validatedQuery);
+            loadSearch(validatedQuery, page);
         } else {
             loadHome();
         }
+    } else if (hash.startsWith('/genre/')) {
+        const parts = hash.slice(7).split('?');
+        const genreId = parts[0];
+        const pageParam = new URLSearchParams(parts[1] || '').get('page') || '1';
+        const page = Math.max(1, parseInt(pageParam, 10));
+
+        loadGenre(genreId, page);
     } else if (hash.startsWith('/movie/')) {
         const movieId = hash.slice(7);
         const validatedId = validateMovieId(movieId);
