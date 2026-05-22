@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MovieFlix — Como Foi Construido</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0c0c0e;
+  --bg-card: #16161a;
+  --bg-elevated: #1e1e24;
+  --text: #e8e6e3;
+  --text-dim: #8a8a8e;
+  --accent: #c8922a;
+  --accent-glow: rgba(200, 146, 42, 0.15);
+  --purple: #7c6cf0;
+  --green: #3ecf8e;
+  --red: #ef6b6b;
+  --blue: #5eaaef;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* ====== HERO ====== */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 40%, rgba(200, 146, 42, 0.06) 0%, transparent 50%),
+              radial-gradient(circle at 70% 60%, rgba(124, 108, 240, 0.04) 0%, transparent 50%);
+  animation: drift 20s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(-3%, 2%) rotate(2deg); }
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  background: var(--bg-card);
+  border: 1px solid rgba(200, 146, 42, 0.3);
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  max-width: 900px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero-sub {
+  font-size: 1.15rem;
+  color: var(--text-dim);
+  max-width: 520px;
+  margin-top: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 3rem;
+  margin-top: 4rem;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-stat {
+  text-align: center;
+}
+
+.hero-stat-num {
+  font-family: var(--font-mono);
+  font-size: 2.2rem;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.hero-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(8px); }
+}
+
+.scroll-hint .arrow {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, var(--text-dim), transparent);
+}
+
+/* ====== SECTIONS ====== */
+.section {
+  padding: 6rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.section h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 400;
+  line-height: 1.15;
+  margin-bottom: 1.5rem;
+}
+
+.section-desc {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  max-width: 600px;
+  margin-bottom: 3rem;
+}
+
+/* ====== FLOW DIAGRAM ====== */
+.flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  padding-left: 40px;
+}
+
+.flow::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--accent), var(--purple), var(--green));
+}
+
+.flow-step {
+  position: relative;
+  padding: 1.5rem 0 1.5rem 2rem;
+}
+
+.flow-step::before {
+  content: '';
+  position: absolute;
+  left: -32px;
+  top: 1.8rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--accent);
+}
+
+.flow-step:nth-child(3)::before { border-color: var(--purple); }
+.flow-step:nth-child(4)::before { border-color: var(--green); }
+.flow-step:nth-child(5)::before { border-color: var(--blue); }
+.flow-step:nth-child(6)::before { border-color: var(--red); }
+
+.flow-step h3 {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.flow-step p {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+
+/* ====== CARDS GRID ====== */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 2rem;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(200, 146, 42, 0.2);
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.card-icon.gold { background: var(--accent-glow); color: var(--accent); }
+.card-icon.purple { background: rgba(124, 108, 240, 0.15); color: var(--purple); }
+.card-icon.green { background: rgba(62, 207, 142, 0.15); color: var(--green); }
+.card-icon.blue { background: rgba(94, 170, 239, 0.15); color: var(--blue); }
+.card-icon.red { background: rgba(239, 107, 107, 0.15); color: var(--red); }
+
+.card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.card p {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+/* ====== DIAGRAM (PARALLEL) ====== */
+.parallel-diagram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 3rem 0;
+}
+
+.parallel-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.parallel-node {
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: center;
+  min-width: 140px;
+}
+
+.node-lead {
+  background: var(--accent-glow);
+  border: 1px solid rgba(200, 146, 42, 0.4);
+  color: var(--accent);
+}
+
+.node-agent {
+  background: rgba(124, 108, 240, 0.1);
+  border: 1px solid rgba(124, 108, 240, 0.3);
+  color: var(--purple);
+}
+
+.node-cron {
+  background: rgba(62, 207, 142, 0.1);
+  border: 1px solid rgba(62, 207, 142, 0.3);
+  color: var(--green);
+}
+
+.node-user {
+  background: rgba(94, 170, 239, 0.1);
+  border: 1px solid rgba(94, 170, 239, 0.3);
+  color: var(--blue);
+}
+
+.connector {
+  width: 2px;
+  height: 24px;
+  background: rgba(255,255,255,0.15);
+}
+
+.connector-split {
+  width: 60%;
+  height: 2px;
+  background: rgba(255,255,255,0.1);
+  position: relative;
+}
+
+.connector-split::before, .connector-split::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 24px;
+  background: rgba(255,255,255,0.15);
+}
+
+.connector-split::before { left: 0; }
+.connector-split::after { right: 0; }
+
+/* ====== CODE BLOCK ====== */
+.code-block {
+  background: var(--bg-elevated);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+.code-block code {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.8;
+  color: var(--text-dim);
+}
+
+.code-block .keyword { color: var(--purple); }
+.code-block .string { color: var(--green); }
+.code-block .comment { color: #555; }
+.code-block .func { color: var(--accent); }
+
+/* ====== TABLE ====== */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2rem 0;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 1rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.data-table td {
+  padding: 1rem;
+  font-size: 0.95rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.data-table td:first-child {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+/* ====== LESSONS ====== */
+.lesson {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.lesson:last-child { border-bottom: none; }
+
+.lesson-num {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 500;
+  color: rgba(200, 146, 42, 0.3);
+  min-width: 60px;
+}
+
+.lesson h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.lesson p {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+/* ====== FOOTER ====== */
+.footer {
+  text-align: center;
+  padding: 4rem 2rem;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  margin-top: 4rem;
+}
+
+.footer p {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.footer a:hover { text-decoration: underline; }
+
+/* ====== DIVIDER ====== */
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(200, 146, 42, 0.3), transparent);
+  margin: 2rem 0;
+}
+
+/* ====== TAG ====== */
+.tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tag-gold { background: var(--accent-glow); color: var(--accent); }
+.tag-purple { background: rgba(124, 108, 240, 0.15); color: var(--purple); }
+.tag-green { background: rgba(62, 207, 142, 0.15); color: var(--green); }
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 640px) {
+  .hero-stats { flex-direction: column; gap: 1.5rem; }
+  .parallel-row { flex-direction: column; align-items: center; }
+  .lesson { flex-direction: column; gap: 0.5rem; }
+  .lesson-num { min-width: auto; }
+  .section { padding: 3rem 1.5rem; }
+  .cards { grid-template-columns: 1fr; }
+}
+
+/* ====== ANIMATIONS ====== */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUp 0.8s ease forwards;
+}
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+.delay-5 { animation-delay: 0.5s; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge fade-in">
+    <span></span> Estudo de caso
+  </div>
+  <h1 class="fade-in delay-1">Como construimos o MovieFlix com <em>agentes autonomos</em></h1>
+  <p class="hero-sub fade-in delay-2">15 fases, 58 testes, 23 endpoints e 13 paginas — tudo em uma sessao, usando trabalho paralelo, monitoramento continuo e feedback via Telegram.</p>
+  <div class="hero-stats fade-in delay-3">
+    <div class="hero-stat">
+      <div class="hero-stat-num">15</div>
+      <div class="hero-stat-label">Fases</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">58</div>
+      <div class="hero-stat-label">Testes</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">40+</div>
+      <div class="hero-stat-label">Agentes</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">~2h</div>
+      <div class="hero-stat-label">Tempo total</div>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    Rolar
+    <div class="arrow"></div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section class="section">
+  <div class="section-num">01 — Visao geral</div>
+  <h2>Um orquestrador, muitos especialistas</h2>
+  <p class="section-desc">O workflow funciona como uma produtora de cinema: um diretor (team lead) coordena equipes especializadas que trabalham ao mesmo tempo, enquanto monitores garantem que nada sai dos trilhos.</p>
+
+  <div class="parallel-diagram">
+    <div class="parallel-node node-user">Usuario (Telegram)</div>
+    <div class="connector"></div>
+    <div class="parallel-node node-lead">Team Lead (Orquestrador)</div>
+    <div class="connector"></div>
+    <div class="connector-split"></div>
+    <div class="parallel-row">
+      <div class="parallel-node node-agent">Backend</div>
+      <div class="parallel-node node-agent">Frontend</div>
+      <div class="parallel-node node-agent">Tester</div>
+    </div>
+    <div style="height: 24px"></div>
+    <div class="parallel-row">
+      <div class="parallel-node node-cron">check-tests 5m</div>
+      <div class="parallel-node node-cron">babysit PRs 5m</div>
+      <div class="parallel-node node-cron">telegram 5m</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" style="max-width: 1100px; margin: 0 auto;"></div>
+
+<!-- 5 COMPONENTES -->
+<section class="section">
+  <div class="section-num">02 — Componentes</div>
+  <h2>As 5 pecas do sistema</h2>
+  <p class="section-desc">Cada peca resolve um problema diferente. Juntas, criam um ciclo de desenvolvimento que roda quase sozinho.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon purple">&#9881;</div>
+      <h3>Agent Teams</h3>
+      <p>Grupos de 2-4 agentes especializados trabalhando em paralelo. Cada um recebe um prompt com escopo claro, edita arquivos, roda testes e reporta ao lead. Resultado: 3x mais rapido que sequencial.</p>
+      <div style="margin-top: 1rem;">
+        <span class="tag tag-purple">Paralelo</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-icon green">&#8634;</div>
+      <h3>Cron Loops</h3>
+      <p>Jobs automaticos a cada 5 minutos: rodar testes, monitorar PRs, processar mensagens Telegram. Detectam problemas antes do usuario perceber. Zero intervencao humana.</p>
+      <div style="margin-top: 1rem;">
+        <span class="tag tag-green">Automatico</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-icon blue">&#9993;</div>
+      <h3>Telegram</h3>
+      <p>Canal bidirecional: usuario manda feedback do celular, agente categoriza (bug, feature, status, pergunta) e age automaticamente — cria issues no GitHub, roda testes, responde.</p>
+      <div style="margin-top: 1rem;">
+        <span class="tag" style="background: rgba(94,170,239,0.15); color: var(--blue);">Tempo real</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-icon gold">&#128065;</div>
+      <h3>Chrome DevTools</h3>
+      <p>Conexao direta com o Chrome para auditar a UI visualmente: tirar screenshots, inspecionar elementos, verificar console, testar no mobile. Encontra bugs que testes unitarios nao pegam.</p>
+      <div style="margin-top: 1rem;">
+        <span class="tag tag-gold">Visual</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-icon red">&#10227;</div>
+      <h3>Ralph Loop</h3>
+      <p>Loop de iteracao: roda testes, se falhar le o erro, corrige o codigo, roda de novo. Repete ate verde ou 5 tentativas. Garante que o codigo sempre termina funcional.</p>
+      <div style="margin-top: 1rem;">
+        <span class="tag" style="background: rgba(239,107,107,0.15); color: var(--red);">Resiliente</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" style="max-width: 1100px; margin: 0 auto;"></div>
+
+<!-- CICLO DE UMA FASE -->
+<section class="section">
+  <div class="section-num">03 — O ciclo</div>
+  <h2>Como cada fase funciona</h2>
+  <p class="section-desc">Toda fase segue o mesmo ciclo de 6 etapas. Previsivel, repetivel, confiavel.</p>
+
+  <div class="flow">
+    <div class="flow-step">
+      <h3>1. Planejar</h3>
+      <p>Define o escopo no CLAUDE.md. Cria tasks com descricoes detalhadas. Lista arquivos que serao tocados.</p>
+    </div>
+    <div class="flow-step">
+      <h3>2. Executar</h3>
+      <p>Cria team, spawna teammates com prompts especificos. Cada agente trabalha independente, editando seus arquivos.</p>
+    </div>
+    <div class="flow-step">
+      <h3>3. Integrar</h3>
+      <p>Lead recebe resultados, verifica conflitos, corrige funcoes faltando, fixa escaped characters. O ponto mais critico.</p>
+    </div>
+    <div class="flow-step">
+      <h3>4. Verificar</h3>
+      <p>Roda <code>npm test</code> (58 testes), <code>node -c app.js</code> (syntax), Chrome DevTools (visual). Tripla verificacao.</p>
+    </div>
+    <div class="flow-step">
+      <h3>5. Entregar</h3>
+      <p>Commit convencional, push pro GitHub, notifica usuario no Telegram. Shutdown teammates, delete team.</p>
+    </div>
+    <div class="flow-step">
+      <h3>6. Monitorar</h3>
+      <p>Crons continuam rodando: testes a cada 5min, PRs monitoradas, Telegram respondido. Mesmo entre fases.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider" style="max-width: 1100px; margin: 0 auto;"></div>
+
+<!-- COMO AGENT TEAMS FUNCIONA -->
+<section class="section">
+  <div class="section-num">04 — Agent Teams em detalhe</div>
+  <h2>Trabalho paralelo na pratica</h2>
+  <p class="section-desc">Exemplo real: Fase 8 criou 6 novos endpoints + UI + testes com 3 agentes simultaneos.</p>
+
+  <div class="code-block">
+    <code>
+<span class="comment">// Team Lead cria o time</span><br>
+<span class="func">TeamCreate</span>({ name: <span class="string">"phase8-features"</span> })<br><br>
+<span class="comment">// Spawna 3 agentes em paralelo</span><br>
+<span class="func">Agent</span>({ name: <span class="string">"api-expand"</span>, prompt: <span class="string">"Cria 6 endpoints..."</span> })<br>
+<span class="func">Agent</span>({ name: <span class="string">"feature-ui"</span>, prompt: <span class="string">"ESPERA api-expand, cria UI..."</span> })<br>
+<span class="func">Agent</span>({ name: <span class="string">"feature-test"</span>, prompt: <span class="string">"ESPERA ambos, escreve testes..."</span> })<br><br>
+<span class="comment">// Quando terminam:</span><br>
+<span class="comment">// 1. Lead verifica testes</span><br>
+<span class="comment">// 2. Corrige integracoes</span><br>
+<span class="comment">// 3. Commit + push</span><br>
+<span class="comment">// 4. Shutdown teammates</span>
+    </code>
+  </div>
+
+  <h3 style="margin: 2rem 0 1rem;">Padroes de coordenacao</h3>
+  <div class="cards" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="card" style="text-align: center;">
+      <h3>Pipeline</h3>
+      <p style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--purple);">A &rarr; B &rarr; C</p>
+      <p>Backend termina, frontend comeca, tester depois. Dependencia sequencial.</p>
+    </div>
+    <div class="card" style="text-align: center;">
+      <h3>Paralelo</h3>
+      <p style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--green);">A | B | C</p>
+      <p>Todos trabalham ao mesmo tempo. Maximo throughput, risco de conflito.</p>
+    </div>
+    <div class="card" style="text-align: center;">
+      <h3>Hub-spoke</h3>
+      <p style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent);">Lead &harr; A, B, C</p>
+      <p>Lead distribui, recolhe e integra. Mais seguro, mais lento.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider" style="max-width: 1100px; margin: 0 auto;"></div>
+
+<!-- TELEGRAM -->
+<section class="section">
+  <div class="section-num">05 — Telegram</div>
+  <h2>Feedback do celular, acao no codigo</h2>
+  <p class="section-desc">O usuario manda mensagem do Telegram, o agente categoriza e age automaticamente.</p>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Mensagem contem</th>
+        <th>Categoria</th>
+        <th>Acao automatica</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>"bug", "erro", "quebrou"</td>
+        <td>Bug report</td>
+        <td>Cria issue no GitHub + responde</td>
+      </tr>
+      <tr>
+        <td>"quero", "feature", "adiciona"</td>
+        <td>Feature request</td>
+        <td>Cria issue com label enhancement</td>
+      </tr>
+      <tr>
+        <td>"status", "testes", "rodou"</td>
+        <td>Status check</td>
+        <td>Roda npm test + responde resultado</td>
+      </tr>
+      <tr>
+        <td>"?"</td>
+        <td>Pergunta</td>
+        <td>Responde baseado no CLAUDE.md</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="divider" style="max-width: 1100px; margin: 0 auto;"></div>
+
+<!-- RESULTADOS -->
+<section class="section">
+  <div class="section-num">06 — Resultados</div>
+  <h2>O que foi construido</h2>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Metrica</th>
+        <th>Valor</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>15</td><td>Fases completadas</td></tr>
+      <tr><td>58</td><td>Testes automatizados</td></tr>
+      <tr><td>23</td><td>Endpoints API</td></tr>
+      <tr><td>13</td><td>Paginas/rotas no SPA</td></tr>
+      <tr><td>30+</td><td>Commits convencionais</td></tr>
+      <tr><td>40+</td><td>Agentes criados e coordenados</td></tr>
+      <tr><td>12</td><td>Teams criados</td></tr>
+      <tr><td>4</td><td>Auditorias visuais com Chrome DevTools</td></tr>
+      <tr><td>20+</td><td>Mensagens Telegram processadas</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="divider" style="max-width: 1100px; margin: 0 auto;"></div>
+
+<!-- LICOES -->
+<section class="section">
+  <div class="section-num">07 — Licoes aprendidas</div>
+  <h2>O que deu errado e como resolvemos</h2>
+
+  <div class="lesson">
+    <div class="lesson-num">01</div>
+    <div>
+      <h4>Teammates editando o mesmo arquivo</h4>
+      <p>Multiplos agentes escrevendo no app.js causou funcoes removidas por um que outro chamava. Solucao: testes de integracao que verificam sintaxe JS e existencia de funcoes.</p>
+    </div>
+  </div>
+
+  <div class="lesson">
+    <div class="lesson-num">02</div>
+    <div>
+      <h4>Endpoints TMDB inexistentes</h4>
+      <p>Um teammate criou /tv/upcoming que nao existe na API do TMDB. Crashou a pagina de series. Solucao: validar endpoints contra documentacao antes de implementar.</p>
+    </div>
+  </div>
+
+  <div class="lesson">
+    <div class="lesson-num">03</div>
+    <div>
+      <h4>Rotas Express com wildcard</h4>
+      <p>/api/tv/:id matchava antes de /api/tv/search porque Express processa na ordem de registro. Solucao: rotas especificas SEMPRE antes de wildcards.</p>
+    </div>
+  </div>
+
+  <div class="lesson">
+    <div class="lesson-num">04</div>
+    <div>
+      <h4>Caracteres escapados (\!)</h4>
+      <p>Agentes rodando em zsh escapavam ! como \! no JavaScript, quebrando o codigo. Solucao: teste automatico que detecta \! e replace_all apos cada edicao.</p>
+    </div>
+  </div>
+
+  <div class="lesson">
+    <div class="lesson-num">05</div>
+    <div>
+      <h4>Linter revertendo edits</h4>
+      <p>Um formatter revertia alteracoes entre edit e commit. Solucao: editar e commitar imediatamente, verificar se a mudanca persistiu.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>MovieFlix Workflow &mdash; Construido com Claude Code (Opus 4.6) + Agent Teams + MCP Tools</p>
+  <p style="margin-top: 0.5rem;"><a href="https://github.com/arktnld/movieflix">github.com/arktnld/movieflix</a></p>
+</footer>
+
+</body>
+</html>
