@@ -354,6 +354,22 @@ Crie agent team com 2 teammates para profissionalizar:
    - Footer com texto mais humano
    - 404 page com personalidade
 
+### Fase 14 — Bugs de UI (Chrome DevTools Audit)
+Issues encontrados via Chrome DevTools em 2026-05-22:
+
+1. **BUG CRITICO: Toggle Series nao funciona** — Clicar em "Series" muda hero mas carrosseis continuam mostrando filmes. Problema no attachMediaToggleListeners ou no reload dos dados.
+2. **Hero slide sem titulo** — No modo Series, hero slides mostram imagem e sinopse mas o titulo fica vazio (TV usa `name` nao `title`).
+3. **Generos nao mudam** — Ao trocar pra Series, generos continuam sendo de filmes. Precisa fetch /api/tv/genres ou esconder generos no modo TV.
+4. **Mobile: section titles cortados** — "PROXIMOS LANCAMENTOS" e "TODO MUNDO TA ASSISTINDO" quebram em 2 linhas feias no mobile 375px.
+5. **Mobile: hero text overflow** — Sinopse no hero transborda no mobile, precisa clamp/truncate.
+6. **Mobile: gradient edges do carousel** — Fade gradients nas bordas dos carrosseis ficam por cima dos section titles.
+7. **Cards sem borda de tipo** — Cards de series nao mostram borda roxa (data-media-type nao ta sendo setado nos cards do home).
+8. **Navbar some e nao volta** — Smart navbar esconde no scroll down mas as vezes nao reaparece no scroll up (bug no threshold).
+9. **Footer: texto TMDB em ingles** — "This product uses the TMDB API..." deveria estar em pt-BR.
+10. **Search placeholder** — "Buscar filmes..." deveria ser "Buscar filmes e series..." quando no modo geral.
+
+Prioridade: Fix 1 e 2 primeiro (toggle quebrado), depois o resto.
+
 ## Telegram — Processar feedback em tempo real
 
 Quando mensagem Telegram chegar (tag `<channel source="plugin:telegram:telegram">`), processa IMEDIATAMENTE:

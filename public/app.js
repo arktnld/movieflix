@@ -1006,12 +1006,13 @@ function renderHeroSlideshow(trendingMovies) {
     }
 
     const slides = trendingMovies.slice(0, 5).map((movie, index) => {
+        const title = movie.title || movie.name || '';
         const backdropUrl = movie.backdrop_path
             ? validateImageUrl(`https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`)
             : null;
 
         const slideImage = backdropUrl
-            ? `<img src="${backdropUrl}" alt="Cena de ${escapeHtml(movie.title)}" class="hero-slide-image" loading="lazy">`
+            ? `<img src="${backdropUrl}" alt="Cena de ${escapeHtml(title)}" class="hero-slide-image" loading="lazy">`
             : `<div class="hero-slide-image" style="background-color: var(--bg-tertiary);"></div>`;
 
         return `
@@ -1019,7 +1020,7 @@ function renderHeroSlideshow(trendingMovies) {
                 ${slideImage}
                 <div class="hero-overlay">
                     <div class="hero-info">
-                        <div class="hero-title">${escapeHtml(movie.title)}</div>
+                        <div class="hero-title">${escapeHtml(title)}</div>
                         <div class="hero-rating">★ ${(movie.vote_average || 0).toFixed(1)}</div>
                         <div class="hero-overview">${escapeHtml(movie.overview || '')}</div>
                     </div>
@@ -1060,11 +1061,12 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
     const trendingMovies = Array.isArray(trendingData.results) ? trendingData.results.slice(0, 20) : [];
     const heroBanner = renderHeroSlideshow(trendingMovies.slice(0, 5));
 
+    const isTV = homeMediaType === 'tv';
     const mediaToggle = `
         <div class="media-toggle-section">
-            <div class="media-toggle">
-                <button class="media-toggle-btn media-toggle-btn-active" data-media-type="movie">Filmes</button>
-                <button class="media-toggle-btn" data-media-type="tv">Séries</button>
+            <div class="media-toggle${isTV ? ' tv-active' : ''}">
+                <button class="media-toggle-btn${!isTV ? ' media-toggle-btn-active' : ''}" data-media-type="movie">Filmes</button>
+                <button class="media-toggle-btn${isTV ? ' media-toggle-btn-active' : ''}" data-media-type="tv">Séries</button>
             </div>
         </div>
     `;
@@ -1093,10 +1095,14 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
         `;
     }
 
-    const popularMovies = Array.isArray(popularData?.results) ? popularData.results.slice(0, 20) : [];
-    const topRatedMovies = Array.isArray(topRatedData?.results) ? topRatedData.results.slice(0, 20) : [];
-    const nowPlayingMovies = Array.isArray(nowPlayingData?.results) ? nowPlayingData.results.slice(0, 20) : [];
-    const upcomingMovies = Array.isArray(upcomingData?.results) ? upcomingData.results.slice(0, 20) : [];
+    // Inject media_type for TV mode so cards route correctly
+    const addMediaType = (items, type) => items.map(item => ({ ...item, media_type: item.media_type || type }));
+    const mt = isTV ? 'tv' : 'movie';
+
+    const popularMovies = addMediaType(Array.isArray(popularData?.results) ? popularData.results.slice(0, 20) : [], mt);
+    const topRatedMovies = addMediaType(Array.isArray(topRatedData?.results) ? topRatedData.results.slice(0, 20) : [], mt);
+    const nowPlayingMovies = addMediaType(Array.isArray(nowPlayingData?.results) ? nowPlayingData.results.slice(0, 20) : [], mt);
+    const upcomingMovies = addMediaType(Array.isArray(upcomingData?.results) ? upcomingData.results.slice(0, 20) : [], mt);
 
     return `
         ${heroBanner}
