@@ -147,7 +147,7 @@ function showToast(message, type = 'error') {
     toast.className = `toast ${type}`;
     toast.innerHTML = `
         <span>${escapeHtml(message)}</span>
-        <button class="toast-close">✕</button>
+        <button class="toast-close" aria-label="Fechar notificação">✕</button>
     `;
 
     const closeBtn = toast.querySelector('.toast-close');
@@ -395,7 +395,7 @@ function renderMovieCard(movie, isTrending = false) {
     const trendingBadge = isTrending ? '<span class="movie-badge">Em Alta</span>' : '';
 
     return `
-        <div class="movie-card" data-movie-id="${movie.id}">
+        <div class="movie-card" data-movie-id="${movie.id}" tabindex="0" role="button" aria-label="${escapeHtml(movie.title)}, classificação ${rating}">
             ${trendingBadge}
             ${posterImg}
             <div class="movie-info">
@@ -422,7 +422,7 @@ function renderHome(trendingData, popularData, topRatedData) {
         if (backdropUrl) {
             heroBanner = `
                 <div class="hero-banner">
-                    <img src="${backdropUrl}" alt="Hero" class="hero-banner-image" loading="lazy">
+                    <img src="${backdropUrl}" alt="Cena de ${escapeHtml(trendingMovie.title)}" class="hero-banner-image" loading="lazy">
                     <div class="hero-overlay">
                         <div class="hero-info">
                             <div class="hero-title">${escapeHtml(trendingMovie.title)}</div>
@@ -508,11 +508,11 @@ function renderMovieDetail(movie) {
         : null;
 
     const backdropImg = backdrop
-        ? `<img src="${backdrop}" alt="Backdrop" class="detail-backdrop-image" loading="lazy">`
+        ? `<img src="${backdrop}" alt="Cena de ${escapeHtml(movie.title)}" class="detail-backdrop-image" loading="lazy">`
         : `<div class="detail-backdrop-image" style="background-color: var(--bg-tertiary);"></div>`;
 
     const posterImg = poster
-        ? `<img src="${poster}" alt="Poster" class="detail-poster" loading="lazy">`
+        ? `<img src="${poster}" alt="Poster de ${escapeHtml(movie.title)}" class="detail-poster" loading="lazy">`
         : `<div class="detail-poster" style="background-color: var(--bg-tertiary);"></div>`;
 
     const rating = renderStarRating(movie.vote_average);
@@ -583,7 +583,7 @@ function renderMovieDetail(movie) {
     return `
         ${renderBreadcrumb(movie.title)}
 
-        <button class="back-button" id="back-button"><span style="display: inline-block;">←</span> Voltar</button>
+        <button class="back-button" id="back-button" aria-label="Voltar para página anterior"><span style="display: inline-block;">←</span> Voltar</button>
 
         <div class="detail-backdrop">
             ${backdropImg}
@@ -632,10 +632,14 @@ async function loadHome() {
         attachMovieCardListeners();
         setupCardAnimationDelays();
         setupParallax();
+        focusMainContent();
+        announceToScreenReader('Página inicial carregada');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         currentPage = 'home';
     } catch (error) {
         app.innerHTML = renderError(error.message);
+        focusMainContent();
+        announceToScreenReader(`Erro: ${error.message}`);
     }
 }
 
@@ -656,9 +660,13 @@ async function loadSearch(query) {
         const results = await apiFetch(`/api/search?q=${encodeURIComponent(validatedQuery)}`);
         app.innerHTML = renderSearchResults(validatedQuery, results);
         attachMovieCardListeners();
+        focusMainContent();
+        announceToScreenReader(`Resultados de busca para ${validatedQuery}`);
         currentPage = 'search';
     } catch (error) {
         app.innerHTML = renderError(error.message);
+        focusMainContent();
+        announceToScreenReader(`Erro ao buscar: ${error.message}`);
     }
 }
 
@@ -670,6 +678,7 @@ async function loadMovieDetail(movieId) {
 
     if (validatedId === null) {
         app.innerHTML = renderError('ID de filme inválido');
+        focusMainContent();
         return;
     }
 
@@ -686,20 +695,32 @@ async function loadMovieDetail(movieId) {
             });
         }
 
+        focusMainContent();
+        announceToScreenReader(`Detalhes do filme: ${movie.title}`);
         currentPage = 'detail';
     } catch (error) {
         app.innerHTML = renderError(error.message);
+        focusMainContent();
+        announceToScreenReader(`Erro ao carregar filme: ${error.message}`);
     }
 }
 
 /**
- * Attach click listeners to movie cards
+ * Attach click and keyboard listeners to movie cards
  */
 function attachMovieCardListeners() {
     document.querySelectorAll('.movie-card').forEach(card => {
-        card.addEventListener('click', () => {
+        const handleCardActivation = () => {
             const movieId = card.dataset.movieId;
             window.location.hash = `#/movie/${movieId}`;
+        };
+
+        card.addEventListener('click', handleCardActivation);
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleCardActivation();
+            }
         });
     });
 }
