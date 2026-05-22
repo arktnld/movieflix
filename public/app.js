@@ -55,6 +55,67 @@ function getVideoKey(videos) {
     return videos[0]?.key || null;
 }
 
+/**
+ * Generate CSS star rating display
+ */
+function renderStarRating(rating) {
+    if (!rating) return 'Sem avaliação';
+
+    const normalizedRating = Math.min(rating / 2, 5);
+    const fullStars = Math.floor(normalizedRating);
+    const hasHalfStar = normalizedRating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    let stars = '★'.repeat(fullStars);
+    if (hasHalfStar) stars += '◐';
+    if (emptyStars > 0) stars += '☆'.repeat(emptyStars);
+
+    return `${stars} ${rating.toFixed(1)}`;
+}
+
+/**
+ * Transition page with fade effect
+ */
+async function transitionPage() {
+    const container = document.getElementById('app');
+    container.classList.add('fade-out');
+    await new Promise(resolve => setTimeout(resolve, 300));
+    container.classList.remove('fade-out');
+}
+
+/**
+ * Setup parallax scrolling for hero banner
+ */
+function setupParallax() {
+    const heroBanner = document.querySelector('.hero-banner-image');
+    if (!heroBanner) return;
+
+    const handleScroll = () => {
+        const scrollY = window.scrollY;
+        heroBanner.style.transform = `translateY(${scrollY * 0.3}px)`;
+    };
+
+    window.addEventListener('scroll', handleScroll);
+}
+
+/**
+ * Setup staggered animation delays for movie cards
+ */
+function setupCardAnimationDelays() {
+    document.querySelectorAll('.movie-card').forEach((card, index) => {
+        card.style.animationDelay = `${index * 80}ms`;
+    });
+}
+
+/**
+ * Setup staggered animation delays for cast members
+ */
+function setupCastAnimationDelays() {
+    document.querySelectorAll('.cast-member').forEach((member, index) => {
+        member.style.animationDelay = `${index * 100}ms`;
+    });
+}
+
 // ============ UI RENDERING ============
 
 /**
@@ -83,7 +144,7 @@ function renderError(message) {
 /**
  * Render a single movie card
  */
-function renderMovieCard(movie) {
+function renderMovieCard(movie, isTrending = false) {
     const poster = movie.poster_path
         ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
         : null;
@@ -92,12 +153,12 @@ function renderMovieCard(movie) {
         ? `<img src="${poster}" alt="${escapeHtml(movie.title)}" class="movie-poster">`
         : `<div class="movie-poster" style="background-color: var(--bg-tertiary);"></div>`;
 
-    const rating = movie.vote_average
-        ? `⭐ ${movie.vote_average.toFixed(1)}`
-        : 'Sem avaliação';
+    const rating = renderStarRating(movie.vote_average);
+    const trendingBadge = isTrending ? '<span class="movie-badge">Em Alta</span>' : '';
 
     return `
         <div class="movie-card" data-movie-id="${movie.id}">
+            ${trendingBadge}
             ${posterImg}
             <div class="movie-info">
                 <div class="movie-title">${escapeHtml(movie.title)}</div>
@@ -122,7 +183,7 @@ function renderHome(trendingData, popularData, topRatedData) {
                 <div class="hero-overlay">
                     <div class="hero-info">
                         <div class="hero-title">${escapeHtml(trendingMovie.title)}</div>
-                        <div class="hero-rating">⭐ ${(trendingMovie.vote_average || 0).toFixed(1)}</div>
+                        <div class="hero-rating">★ ${(trendingMovie.vote_average || 0).toFixed(1)}</div>
                         <div class="hero-overview">${escapeHtml(trendingMovie.overview || '')}</div>
                     </div>
                 </div>
@@ -140,21 +201,21 @@ function renderHome(trendingData, popularData, topRatedData) {
         <div class="carousel-section">
             <div class="section-title">Tendência da Semana</div>
             <div class="carousel-container">
-                ${trendingMovies.map(m => renderMovieCard(m)).join('')}
+                ${trendingMovies.map(m => renderMovieCard(m, true)).join('')}
             </div>
         </div>
 
         <div class="carousel-section">
             <div class="section-title">Populares Agora</div>
             <div class="carousel-container">
-                ${popularMovies.map(m => renderMovieCard(m)).join('')}
+                ${popularMovies.map(m => renderMovieCard(m, false)).join('')}
             </div>
         </div>
 
         <div class="carousel-section">
             <div class="section-title">Melhor Avaliados</div>
             <div class="carousel-container">
-                ${topRatedMovies.map(m => renderMovieCard(m)).join('')}
+                ${topRatedMovies.map(m => renderMovieCard(m, false)).join('')}
             </div>
         </div>
     `;
@@ -201,9 +262,7 @@ function renderMovieDetail(movie) {
         ? `<img src="${poster}" alt="Poster" class="detail-poster">`
         : `<div class="detail-poster" style="background-color: var(--bg-tertiary);"></div>`;
 
-    const rating = movie.vote_average
-        ? `⭐ ${movie.vote_average.toFixed(1)}`
-        : 'Sem avaliação';
+    const rating = renderStarRating(movie.vote_average);
 
     const genres = (movie.genres || [])
         .map(g => `<span class="genre-tag">${escapeHtml(g.name)}</span>`)
@@ -260,7 +319,7 @@ function renderMovieDetail(movie) {
     }
 
     return `
-        <button class="back-button" id="back-button">← Voltar</button>
+        <button class="back-button" id="back-button"><span style="display: inline-block;">←</span> Voltar</button>
 
         <div class="detail-backdrop">
             ${backdropImg}
@@ -298,6 +357,7 @@ async function loadHome() {
     app.innerHTML = renderLoading();
 
     try {
+        await transitionPage();
         const [trending, popular, topRated] = await Promise.all([
             apiFetch('/api/trending'),
             apiFetch('/api/popular'),
@@ -306,6 +366,9 @@ async function loadHome() {
 
         app.innerHTML = renderHome(trending, popular, topRated);
         attachMovieCardListeners();
+        setupCardAnimationDelays();
+        setupParallax();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         currentPage = 'home';
     } catch (error) {
         app.innerHTML = renderError(error.message);
@@ -324,9 +387,12 @@ async function loadSearch(query) {
     app.innerHTML = renderLoading();
 
     try {
+        await transitionPage();
         const results = await apiFetch(`/api/search?q=${encodeURIComponent(query)}`);
         app.innerHTML = renderSearchResults(query, results);
         attachMovieCardListeners();
+        setupCardAnimationDelays();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         currentPage = 'search';
     } catch (error) {
         app.innerHTML = renderError(error.message);
@@ -340,6 +406,7 @@ async function loadMovieDetail(movieId) {
     app.innerHTML = renderLoading();
 
     try {
+        await transitionPage();
         const movie = await apiFetch(`/api/movie/${movieId}`);
         app.innerHTML = renderMovieDetail(movie);
 
@@ -350,6 +417,8 @@ async function loadMovieDetail(movieId) {
             });
         }
 
+        setupCastAnimationDelays();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         currentPage = 'detail';
     } catch (error) {
         app.innerHTML = renderError(error.message);
