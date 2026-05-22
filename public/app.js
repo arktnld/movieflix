@@ -117,6 +117,26 @@ function hideLoadingBar() {
 }
 
 /**
+ * Announce to screen readers
+ */
+function announceToScreenReader(message) {
+    const liveRegion = document.getElementById('live-region');
+    if (liveRegion) {
+        liveRegion.textContent = message;
+    }
+}
+
+/**
+ * Set focus to main content area
+ */
+function focusMainContent() {
+    const app = document.getElementById('app');
+    if (app) {
+        app.focus();
+    }
+}
+
+/**
  * Show toast notification
  */
 function showToast(message, type = 'error') {
@@ -335,6 +355,22 @@ function renderError(message) {
     return `
         <div class="error-message">
             ⚠️ ${escapeHtml(message)}
+        </div>
+    `;
+}
+
+/**
+ * Render 404 not found page
+ */
+function render404Page() {
+    return `
+        <div class="not-found-page">
+            <div class="not-found-content">
+                <div class="not-found-number">404</div>
+                <h1 class="not-found-title">Página não encontrada</h1>
+                <p class="not-found-description">Desculpe, a página que você está procurando não existe.</p>
+                <a href="#/" class="not-found-link">Voltar para Home</a>
+            </div>
         </div>
     `;
 }
@@ -705,7 +741,7 @@ function handleRoute() {
             app.innerHTML = renderError('Filme não encontrado');
         }
     } else {
-        app.innerHTML = renderError('Página não encontrada');
+        app.innerHTML = render404Page();
     }
 }
 
@@ -764,11 +800,49 @@ document.addEventListener('keydown', (e) => {
 window.addEventListener('hashchange', handleRoute);
 
 /**
+ * Setup online/offline detection
+ */
+function setupOfflineDetection() {
+    window.addEventListener('online', () => {
+        showToast('Conexão restaurada', 'success');
+    });
+
+    window.addEventListener('offline', () => {
+        showToast('Você está offline', 'error');
+    });
+}
+
+/**
+ * Setup placeholder animation
+ */
+function setupPlaceholderAnimation() {
+    const searchInput = document.getElementById('search-input');
+    if (!searchInput) return;
+
+    const placeholders = [
+        'Buscar filmes...',
+        'Tente: Matrix',
+        'Tente: Interestelar'
+    ];
+
+    let currentIndex = 0;
+
+    setInterval(() => {
+        if (!document.activeElement || document.activeElement !== searchInput) {
+            currentIndex = (currentIndex + 1) % placeholders.length;
+            searchInput.placeholder = placeholders[currentIndex];
+        }
+    }, 3000);
+}
+
+/**
  * Initial route on page load
  */
 document.addEventListener('DOMContentLoaded', () => {
     setupScrollToTop();
     setupSmartNavbar();
     setupLazyLoading();
+    setupOfflineDetection();
+    setupPlaceholderAnimation();
     handleRoute();
 });

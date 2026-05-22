@@ -15,14 +15,17 @@
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://image.tmdb.org">
 </head>
 <body>
+    <a href="#app" class="skip-to-content">Pular para conteúdo</a>
+
     <div id="loading-bar" class="loading-bar"></div>
 
-    <nav class="navbar">
+    <nav class="navbar" role="navigation">
         <div class="navbar-container">
             <div class="logo">🎬 MovieFlix</div>
-            <div class="search-container">
+            <div class="search-container" role="search">
                 <input
                     type="text"
                     id="search-input"
@@ -35,13 +38,15 @@
         </div>
     </nav>
 
-    <main id="app" class="app-container"></main>
+    <div id="live-region" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+
+    <main id="app" class="app-container" role="main" tabindex="-1"></main>
 
     <div id="toast-container" class="toast-container"></div>
 
     <button id="scroll-to-top" class="scroll-to-top" aria-label="Voltar ao topo" title="Voltar ao topo">↑</button>
 
-    <footer class="footer">
+    <footer class="footer" role="contentinfo">
         <div class="footer-content">
             <div class="footer-section">
                 <div class="footer-title">MovieFlix</div>
