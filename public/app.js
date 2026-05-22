@@ -1173,9 +1173,9 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
 
     const mediaToggle = `
         <div class="media-toggle-section">
-            <div class="media-toggle${isTV ? ' tv-active' : ''}">
-                <button class="media-toggle-btn${!isTV ? ' media-toggle-btn-active' : ''}" data-media-type="movie">Filmes</button>
-                <button class="media-toggle-btn${isTV ? ' media-toggle-btn-active' : ''}" data-media-type="tv">Séries</button>
+            <div class="media-toggle">
+                <a href="#/" class="media-toggle-btn media-toggle-btn-active">Filmes</a>
+                <a href="#/series" class="media-toggle-btn">Séries</a>
             </div>
         </div>
     `;
@@ -1630,7 +1630,20 @@ async function loadHome() {
 
         app.innerHTML = renderHome(trending, popular, topRated, genres, nowPlaying, upcoming);
         attachMovieCardListeners();
-        attachGenrePillListeners();
+        // Genre pill click handlers
+        document.querySelectorAll('.genre-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                const genreId = pill.dataset.genreId;
+                if (genreId) window.location.hash = `#/genre/${genreId}`;
+            });
+            pill.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    const genreId = pill.dataset.genreId;
+                    if (genreId) window.location.hash = `#/genre/${genreId}`;
+                }
+            });
+        });
         setupCardAnimationDelays();
         setupHeroSlideshow();
         setupCarouselNavigation();
@@ -2030,30 +2043,6 @@ function attachTopListItemListeners() {
             }
         });
     });
-                    mediaType === 'tv' ? apiFetch('/api/tv/popular') : apiFetch('/api/popular'),
-                    mediaType === 'tv' ? apiFetch('/api/tv/top-rated') : apiFetch('/api/top-rated'),
-                    apiFetch('/api/genres'),
-                    mediaType === 'tv' ? apiFetch('/api/tv/trending') : apiFetch('/api/now-playing'),
-                    mediaType === 'tv' ? apiFetch('/api/tv/popular') : apiFetch('/api/upcoming')
-                ]);
-
-                app.innerHTML = renderHome(trending, popular, topRated, genres, nowPlaying, upcoming);
-                attachMovieCardListeners();
-                attachGenrePillListeners();
-                setupCardAnimationDelays();
-                setupHeroSlideshow();
-                setupCarouselNavigation();
-                setupCarouselTouch();
-                focusMainContent();
-                const mediaLabel = mediaType === 'tv' ? 'Séries' : 'Filmes';
-                announceToScreenReader(`Exibindo ${mediaLabel}`);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } catch (error) {
-                app.innerHTML = renderError(error.message);
-                focusMainContent();
-            }
-        });
-    });
 }
 
 /**
@@ -2443,10 +2432,25 @@ document.addEventListener('DOMContentLoaded', () => {
     setupPlaceholderAnimation();
     applyTheme();
     applyFontSize();
-    updateNavbar();
+    // Update navbar with user state if logged in
+    const user = JSON.parse(localStorage.getItem('movieflix_user') || 'null');
+    if (user && user.loggedIn) {
+        const navContainer = document.querySelector('.navbar-container');
+        if (navContainer && !document.querySelector('.user-avatar')) {
+            const initials = (user.name || user.email || 'U').charAt(0).toUpperCase();
+            const userHtml = document.createElement('div');
+            userHtml.className = 'user-avatar';
+            userHtml.textContent = initials;
+            userHtml.title = user.name || user.email;
+            userHtml.style.cssText = 'width:36px;height:36px;border-radius:50%;background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;cursor:pointer;';
+            userHtml.addEventListener('click', () => {
+                if (confirm('Sair da conta?')) {
+                    localStorage.removeItem('movieflix_user');
+                    location.reload();
+                }
+            });
+            navContainer.appendChild(userHtml);
+        }
+    }
     handleRoute();
-    // Hide loading screen after initial render (1 second delay for smooth fade)
-    setTimeout(() => {
-        hideLoadingBar();
-    }, 1000);
 });
