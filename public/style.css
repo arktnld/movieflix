@@ -737,8 +737,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Gradient fade effect on carousel edges */
-.carousel-section::before,
-.carousel-section::after {
+.carousel-container::before,
+.carousel-container::after {
     content: '';
     position: absolute;
     top: 0;
@@ -748,12 +748,12 @@ h1, h2, h3, h4, h5, h6 {
     z-index: 10;
 }
 
-.carousel-section::before {
+.carousel-container::before {
     left: 0;
     background: linear-gradient(90deg, var(--bg-dark) 0%, rgba(10, 10, 10, 0) 100%);
 }
 
-.carousel-section::after {
+.carousel-container::after {
     right: 0;
     background: linear-gradient(270deg, var(--bg-dark) 0%, rgba(10, 10, 10, 0) 100%);
 }
@@ -2116,7 +2116,18 @@ h1, h2, h3, h4, h5, h6 {
 
     .section-title,
     .search-page-title {
-        font-size: var(--font-h2);
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .hero-overview {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        font-size: 0.8rem;
     }
 
     .not-found-number {

@@ -211,11 +211,12 @@ function setupSmartNavbar() {
 
     window.addEventListener('scroll', () => {
         const currentScrollY = window.scrollY;
+        const delta = currentScrollY - lastScrollY;
 
-        if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        if (delta > 10 && currentScrollY > 100) {
             scrollDirection = 'down';
             navbar.classList.add('hidden');
-        } else {
+        } else if (delta < -10 || currentScrollY <= 100) {
             scrollDirection = 'up';
             navbar.classList.remove('hidden');
         }
@@ -1080,7 +1081,7 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
     `;
 
     let genresHtml = '';
-    if (genresData && Array.isArray(genresData.genres)) {
+    if (homeMediaType !== 'tv' && genresData && Array.isArray(genresData.genres)) {
         const genreTags = genresData.genres.slice(0, 15).map(g =>
             `<button class="genre-pill" data-genre-id="${g.id}" role="button" tabindex="0">${escapeHtml(g.name)}</button>`
         ).join('');
