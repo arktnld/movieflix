@@ -471,6 +471,184 @@ function renderBreadcrumb(movieTitle) {
 // ============ UI RENDERING ============
 
 /**
+ * Render TV series detail page
+ */
+function renderTVDetail(tv) {
+    if (!tv || !tv.name || typeof tv.id !== 'number') {
+        return renderError('Série não encontrada ou dados inválidos');
+    }
+
+    const backdrop = tv.backdrop_path
+        ? validateImageUrl(`https://image.tmdb.org/t/p/w1280${tv.backdrop_path}`)
+        : null;
+
+    const poster = tv.poster_path
+        ? validateImageUrl(`https://image.tmdb.org/t/p/w500${tv.poster_path}`)
+        : null;
+
+    const backdropImg = backdrop
+        ? `<img src="${backdrop}" alt="Cena de ${escapeHtml(tv.name)}" class="detail-backdrop-image" loading="lazy">`
+        : `<div class="detail-backdrop-image" style="background-color: var(--bg-tertiary);"></div>`;
+
+    const posterImg = poster
+        ? `<img src="${poster}" alt="Poster de ${escapeHtml(tv.name)}" class="detail-poster" loading="lazy">`
+        : `<div class="detail-poster" style="background-color: var(--bg-tertiary);"></div>`;
+
+    const rating = renderStarRating(tv.vote_average);
+
+    const genres = Array.isArray(tv.genres)
+        ? tv.genres
+            .filter(g => g && g.name)
+            .map(g => `<span class="genre-tag">${escapeHtml(g.name)}</span>`)
+            .join('')
+        : '';
+
+    const seasons = tv.number_of_seasons || 0;
+    const episodes = tv.number_of_episodes || 0;
+    const seriesInfo = `<div class="series-info"><span>${seasons} ${seasons === 1 ? 'Temporada' : 'Temporadas'} • ${episodes} ${episodes === 1 ? 'Episódio' : 'Episódios'}</span></div>`;
+
+    const castMembers = Array.isArray(tv.credits?.cast)
+        ? tv.credits.cast
+            .slice(0, 10)
+            .filter(a => a && a.name)
+            .map(actor => {
+                const photo = actor.profile_path
+                    ? validateImageUrl(`https://image.tmdb.org/t/p/w185${actor.profile_path}`)
+                    : null;
+
+                const photoImg = photo
+                    ? `<img src="${photo}" alt="${escapeHtml(actor.name)}" class="cast-photo" loading="lazy">`
+                    : `<div class="cast-photo" style="background-color: var(--bg-tertiary);"></div>`;
+
+                return `
+                    <div class="cast-member">
+                        ${photoImg}
+                        <div class="cast-name">${escapeHtml(actor.name)}</div>
+                        <div class="cast-character">${escapeHtml(actor.character || '')}</div>
+                    </div>
+                `;
+            })
+            .join('')
+        : '';
+
+    let videoHtml = '';
+    const videoKey = getVideoKey(tv.videos?.results);
+    if (videoKey) {
+        const validatedKey = validateYouTubeKey(videoKey);
+        if (validatedKey) {
+            videoHtml = `
+                <div class="videos-section">
+                    <div class="videos-title">Trailer</div>
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/${validatedKey}"
+                                title="Trailer"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    let castHtml = '';
+    if (castMembers) {
+        castHtml = `
+            <div class="cast-section">
+                <div class="cast-title">Elenco</div>
+                <div class="cast-grid">
+                    ${castMembers}
+                </div>
+            </div>
+        `;
+    }
+
+    return `
+        ${renderBreadcrumb(tv.name)}
+
+        <button class="back-button" id="back-button" aria-label="Voltar para página anterior"><span style="display: inline-block;">←</span> Voltar</button>
+
+        <div class="detail-backdrop">
+            ${backdropImg}
+        </div>
+
+        <div class="detail-container">
+            <div>${posterImg}</div>
+            <div class="detail-info">
+                <h1>${escapeHtml(tv.name)}</h1>
+                <div class="detail-meta">
+                    <div class="detail-rating">${rating}</div>
+                    <div class="detail-genres">${genres}</div>
+                </div>
+                ${seriesInfo}
+                <div class="detail-overview">${escapeHtml(tv.overview || 'Sem sinopse disponível')}</div>
+                ${castHtml}
+                ${videoHtml}
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Render top list page
+ */
+function renderTopList(items) {
+    if (!items || !Array.isArray(items)) {
+        return renderError('Dados inválidos recebidos do servidor');
+    }
+
+    const topItems = items.slice(0, 20);
+
+    if (topItems.length === 0) {
+        return `<div class="top-list-page">
+            <h1 class="top-list-title">Top Lista</h1>
+            <div class="no-results">Nenhum item encontrado</div>
+        </div>`;
+    }
+
+    const listHtml = topItems.map((item, index) => {
+        const title = item.title || item.name || '';
+        const isTV = item.media_type === 'tv';
+        const rating = renderStarRating(item.vote_average);
+
+        const poster = item.poster_path
+            ? validateImageUrl(`https://image.tmdb.org/t/p/w154${item.poster_path}`)
+            : null;
+
+        const posterImg = poster
+            ? `<img src="${poster}" alt="${escapeHtml(title)}" class="top-list-poster" loading="lazy">`
+            : `<div class="top-list-poster" style="background-color: var(--bg-tertiary);"></div>`;
+
+        const mediaTypeBadge = renderMediaTypeBadge(item.media_type);
+
+        return `
+            <div class="top-list-item" data-rank="${index + 1}" data-item-id="${item.id}" data-media-type="${item.media_type || 'movie'}" tabindex="0" role="button">
+                <div class="top-list-rank">${index + 1}</div>
+                <div class="top-list-poster-container">
+                    ${posterImg}
+                </div>
+                <div class="top-list-content">
+                    <div class="top-list-item-title">${escapeHtml(title)}</div>
+                    <div class="top-list-item-meta">
+                        <div>${rating}</div>
+                        ${mediaTypeBadge}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    return `
+        <div class="top-list-page">
+            <h1 class="top-list-title">Top 20 Filmes e Séries</h1>
+            <div class="top-list-container">
+                ${listHtml}
+            </div>
+        </div>
+    `;
+}
+
+/**
  * Render loading state
  */
 function renderLoading() {
@@ -510,10 +688,27 @@ function render404Page() {
 }
 
 /**
+ * Render media type badge
+ */
+function renderMediaTypeBadge(mediaType) {
+    if (mediaType === 'tv') {
+        return '<span class="media-badge media-badge-tv">Série</span>';
+    }
+    return '<span class="media-badge media-badge-movie">Filme</span>';
+}
+
+/**
  * Render a single movie card
  */
 function renderMovieCard(movie, isTrending = false) {
-    if (!movie || typeof movie.id !== 'number' || !movie.title) {
+    if (!movie || typeof movie.id !== 'number') {
+        return '';
+    }
+
+    const isTV = movie.media_type === 'tv' || !movie.title;
+    const title = movie.title || movie.name || '';
+
+    if (!title) {
         return '';
     }
 
@@ -522,18 +717,20 @@ function renderMovieCard(movie, isTrending = false) {
         : null;
 
     const posterImg = poster
-        ? `<img src="${poster}" alt="${escapeHtml(movie.title)}" class="movie-poster" loading="lazy">`
+        ? `<img src="${poster}" alt="${escapeHtml(title)}" class="movie-poster" loading="lazy">`
         : `<div class="movie-poster" style="background-color: var(--bg-tertiary);"></div>`;
 
     const rating = renderStarRating(movie.vote_average);
     const trendingBadge = isTrending ? '<span class="movie-badge">Em Alta</span>' : '';
+    const mediaTypeBadge = movie.media_type ? renderMediaTypeBadge(movie.media_type) : '';
 
     return `
-        <div class="movie-card" data-movie-id="${movie.id}" tabindex="0" role="button" aria-label="${escapeHtml(movie.title)}, classificação ${rating}">
+        <div class="movie-card" data-movie-id="${movie.id}" data-media-type="${movie.media_type || 'movie'}" tabindex="0" role="button" aria-label="${escapeHtml(title)}, classificação ${rating}">
             ${trendingBadge}
+            ${mediaTypeBadge}
             ${posterImg}
             <div class="movie-info">
-                <div class="movie-title">${escapeHtml(movie.title)}</div>
+                <div class="movie-title">${escapeHtml(title)}</div>
                 <div class="movie-rating">${rating}</div>
             </div>
         </div>
@@ -588,6 +785,11 @@ function renderHeroSlideshow(trendingMovies) {
 }
 
 /**
+ * Global state for home page media type
+ */
+let homeMediaType = 'movie';
+
+/**
  * Render home page with hero banner and carousels
  */
 function renderHome(trendingData, popularData, topRatedData, genresData, nowPlayingData, upcomingData) {
@@ -597,6 +799,15 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
 
     const trendingMovies = Array.isArray(trendingData.results) ? trendingData.results.slice(0, 20) : [];
     const heroBanner = renderHeroSlideshow(trendingMovies.slice(0, 5));
+
+    const mediaToggle = `
+        <div class="media-toggle-section">
+            <div class="media-toggle">
+                <button class="media-toggle-btn media-toggle-btn-active" data-media-type="movie">Filmes</button>
+                <button class="media-toggle-btn" data-media-type="tv">Séries</button>
+            </div>
+        </div>
+    `;
 
     let genresHtml = '';
     if (genresData && Array.isArray(genresData.genres)) {
@@ -621,6 +832,8 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
 
     return `
         ${heroBanner}
+
+        ${mediaToggle}
 
         ${genresHtml}
 
@@ -942,6 +1155,7 @@ async function loadHome() {
         app.innerHTML = renderHome(trending, popular, topRated, genres, nowPlaying, upcoming);
         attachMovieCardListeners();
         attachGenrePillListeners();
+        attachMediaToggleListeners();
         setupCardAnimationDelays();
         setupHeroSlideshow();
         setupCarouselNavigation();
@@ -1070,13 +1284,79 @@ async function loadMovieDetail(movieId) {
 }
 
 /**
+ * Load and render TV series detail page
+ */
+async function loadTVDetail(tvId) {
+    const validatedId = validateMovieId(tvId);
+
+    if (validatedId === null) {
+        app.innerHTML = renderError('ID de série inválido');
+        focusMainContent();
+        return;
+    }
+
+    app.innerHTML = renderLoading();
+
+    try {
+        const tv = await apiFetch(`/api/tv/${validatedId}`);
+
+        app.innerHTML = renderTVDetail(tv);
+
+        const backButton = document.getElementById('back-button');
+        if (backButton) {
+            backButton.addEventListener('click', () => {
+                window.location.hash = '#/';
+            });
+        }
+
+        attachTopListItemListeners();
+        setupCarouselNavigation();
+        setupCarouselTouch();
+        focusMainContent();
+        announceToScreenReader(`Detalhes da série: ${tv.name}`);
+        currentPage = 'tv-detail';
+    } catch (error) {
+        app.innerHTML = renderError(error.message);
+        focusMainContent();
+        announceToScreenReader(`Erro ao carregar série: ${error.message}`);
+    }
+}
+
+/**
+ * Load and render top list page
+ */
+async function loadTopList() {
+    app.innerHTML = renderLoading();
+
+    try {
+        const data = await apiFetch('/api/top-list');
+        app.innerHTML = renderTopList(data.results);
+        attachTopListItemListeners();
+        focusMainContent();
+        announceToScreenReader('Top 20 Filmes e Séries carregados');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        currentPage = 'top-list';
+    } catch (error) {
+        app.innerHTML = renderError(error.message);
+        focusMainContent();
+        announceToScreenReader(`Erro ao carregar top lista: ${error.message}`);
+    }
+}
+
+/**
  * Attach click and keyboard listeners to movie cards
  */
 function attachMovieCardListeners() {
     document.querySelectorAll('.movie-card').forEach(card => {
         const handleCardActivation = () => {
             const movieId = card.dataset.movieId;
-            window.location.hash = `#/movie/${movieId}`;
+            const mediaType = card.dataset.mediaType || 'movie';
+
+            if (mediaType === 'tv') {
+                window.location.hash = `#/tv/${movieId}`;
+            } else {
+                window.location.hash = `#/movie/${movieId}`;
+            }
         };
 
         card.addEventListener('click', handleCardActivation);
@@ -1084,6 +1364,32 @@ function attachMovieCardListeners() {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 handleCardActivation();
+            }
+        });
+    });
+}
+
+/**
+ * Attach click and keyboard listeners to top list items
+ */
+function attachTopListItemListeners() {
+    document.querySelectorAll('.top-list-item').forEach(item => {
+        const handleItemActivation = () => {
+            const itemId = item.dataset.itemId;
+            const mediaType = item.dataset.mediaType || 'movie';
+
+            if (mediaType === 'tv') {
+                window.location.hash = `#/tv/${itemId}`;
+            } else {
+                window.location.hash = `#/movie/${itemId}`;
+            }
+        };
+
+        item.addEventListener('click', handleItemActivation);
+        item.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleItemActivation();
             }
         });
     });
@@ -1104,6 +1410,54 @@ function attachGenrePillListeners() {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 handleGenreActivation();
+            }
+        });
+    });
+}
+
+/**
+ * Attach listeners to media toggle buttons
+ */
+function attachMediaToggleListeners() {
+    document.querySelectorAll('.media-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const mediaType = btn.dataset.mediaType;
+            homeMediaType = mediaType;
+
+            // Update button states
+            document.querySelectorAll('.media-toggle-btn').forEach(b => {
+                b.classList.remove('media-toggle-btn-active');
+            });
+            btn.classList.add('media-toggle-btn-active');
+
+            // Reload home page with different media type
+            app.innerHTML = renderLoading();
+            try {
+                await transitionPage();
+                const [trending, popular, topRated, genres, nowPlaying, upcoming] = await Promise.all([
+                    mediaType === 'tv' ? apiFetch('/api/tv/trending') : apiFetch('/api/trending'),
+                    mediaType === 'tv' ? apiFetch('/api/tv/popular') : apiFetch('/api/popular'),
+                    mediaType === 'tv' ? apiFetch('/api/tv/top-rated') : apiFetch('/api/top-rated'),
+                    apiFetch('/api/genres'),
+                    mediaType === 'tv' ? apiFetch('/api/tv/trending') : apiFetch('/api/now-playing'),
+                    mediaType === 'tv' ? apiFetch('/api/tv/popular') : apiFetch('/api/upcoming')
+                ]);
+
+                app.innerHTML = renderHome(trending, popular, topRated, genres, nowPlaying, upcoming);
+                attachMovieCardListeners();
+                attachGenrePillListeners();
+                attachMediaToggleListeners();
+                setupCardAnimationDelays();
+                setupHeroSlideshow();
+                setupCarouselNavigation();
+                setupCarouselTouch();
+                focusMainContent();
+                const mediaLabel = mediaType === 'tv' ? 'Séries' : 'Filmes';
+                announceToScreenReader(`Exibindo ${mediaLabel}`);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (error) {
+                app.innerHTML = renderError(error.message);
+                focusMainContent();
             }
         });
     });
@@ -1163,6 +1517,8 @@ function handleRoute() {
     if (hash === '/') {
         loadHome();
         searchInput.value = '';
+    } else if (hash === '/top') {
+        loadTopList();
     } else if (hash.startsWith('/search/')) {
         const parts = hash.slice(8).split('?');
         const encodedQuery = parts[0];
@@ -1198,6 +1554,14 @@ function handleRoute() {
             loadMovieDetail(movieId);
         } else {
             app.innerHTML = renderError('Filme não encontrado');
+        }
+    } else if (hash.startsWith('/tv/')) {
+        const tvId = hash.slice(4);
+        const validatedId = validateMovieId(tvId);
+        if (validatedId !== null) {
+            loadTVDetail(tvId);
+        } else {
+            app.innerHTML = renderError('Série não encontrada');
         }
     } else {
         app.innerHTML = render404Page();
