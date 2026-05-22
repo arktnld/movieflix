@@ -1897,65 +1897,64 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ============ MEDIA TOGGLE ============ */
+/* Netflix-style category tabs */
 .media-toggle-section {
     display: flex;
-    align-items: center;
-    gap: var(--spacing-lg);
-    margin-bottom: var(--spacing-xl);
+    align-items: baseline;
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-2xl);
+    border-bottom: 1px solid var(--bg-tertiary);
+    padding-bottom: 0;
 }
 
 .media-toggle {
-    display: inline-flex;
-    position: relative;
-    background: var(--bg-secondary);
-    border: 1px solid var(--bg-tertiary);
-    border-radius: var(--radius-md);
-    padding: 3px;
+    display: flex;
     gap: 0;
-}
-
-.media-toggle::after {
-    content: '';
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: calc(50% - 3px);
-    height: calc(100% - 6px);
-    background: var(--bg-tertiary);
-    border-radius: calc(var(--radius-md) - 2px);
-    transition: transform var(--duration-normal) var(--ease-out);
-    z-index: 0;
-}
-
-.media-toggle.tv-active::after {
-    transform: translateX(100%);
 }
 
 .media-toggle-btn {
     position: relative;
-    z-index: 1;
-    padding: 0.6rem 1.8rem;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
     border: none;
     background: transparent;
-    color: var(--text-secondary);
+    color: var(--neutral-400);
     font-weight: var(--font-weight-medium);
     cursor: pointer;
-    border-radius: calc(var(--radius-md) - 2px);
     transition: color var(--duration-normal) var(--ease-out);
-    font-size: var(--font-caption);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
+    font-size: 1.1rem;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: -0.01em;
     white-space: nowrap;
 }
 
+.media-toggle-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+    border-radius: 3px 3px 0 0;
+    transition: background var(--duration-normal) var(--ease-out);
+}
+
 .media-toggle-btn:hover {
-    color: var(--text-primary);
+    color: var(--neutral-200);
 }
 
 .media-toggle-btn-active {
     color: var(--text-primary);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-bold);
+}
+
+.media-toggle-btn-active::after {
+    background: var(--accent);
+}
+
+.media-toggle-btn-active[data-media-type="tv"]::after {
+    background: #6366f1;
 }
 
 /* ============ MEDIA TYPE BADGES ============ */
