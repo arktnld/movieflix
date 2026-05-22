@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" font-family="'Segoe UI', sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0c0c0e"/>
+      <stop offset="100%" stop-color="#12121a"/>
+    </linearGradient>
+    <linearGradient id="gold-line" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#c8922a" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#c8922a"/>
+      <stop offset="100%" stop-color="#c8922a" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow-gold">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-purple">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="900" fill="url(#bg)"/>
+
+  <!-- Subtle grid -->
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+  </pattern>
+  <rect width="1200" height="900" fill="url(#grid)"/>
+
+  <!-- Title -->
+  <text x="600" y="52" text-anchor="middle" fill="#c8922a" font-size="13" font-weight="700" letter-spacing="4" text-transform="uppercase">WORKFLOW DE DESENVOLVIMENTO AUTONOMO</text>
+  <text x="600" y="82" text-anchor="middle" fill="#e8e6e3" font-size="28" font-weight="700">Como o MovieFlix foi construido</text>
+
+  <!-- ===== USUARIO (top) ===== -->
+  <rect x="490" y="115" width="220" height="56" rx="28" fill="rgba(94,170,239,0.1)" stroke="#5eaaef" stroke-width="1.5" filter="url(#shadow)"/>
+  <circle cx="530" cy="143" r="14" fill="none" stroke="#5eaaef" stroke-width="1.5"/>
+  <circle cx="530" cy="138" r="5" fill="#5eaaef"/>
+  <path d="M520 152 Q530 158 540 152" fill="none" stroke="#5eaaef" stroke-width="1.5"/>
+  <text x="555" y="148" fill="#5eaaef" font-size="14" font-weight="700">Usuario (Telegram)</text>
+
+  <!-- Arrow down -->
+  <line x1="600" y1="171" x2="600" y2="205" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+  <polygon points="594,200 600,212 606,200" fill="rgba(255,255,255,0.2)"/>
+  <text x="620" y="195" fill="#8a8a8e" font-size="10">feedback</text>
+
+  <!-- ===== TEAM LEAD (center) ===== -->
+  <rect x="430" y="215" width="340" height="70" rx="14" fill="rgba(200,146,42,0.08)" stroke="#c8922a" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="450" y="235" width="30" height="30" rx="6" fill="rgba(200,146,42,0.2)"/>
+  <text x="465" y="256" text-anchor="middle" fill="#c8922a" font-size="16">&#9733;</text>
+  <text x="500" y="248" fill="#e8e6e3" font-size="16" font-weight="700">Team Lead</text>
+  <text x="500" y="268" fill="#8a8a8e" font-size="11">Orquestra tudo: cria teams, distribui tasks, integra codigo</text>
+
+  <!-- Arrows down (3-way split) -->
+  <line x1="600" y1="285" x2="600" y2="310" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <line x1="600" y1="310" x2="250" y2="310" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+  <line x1="600" y1="310" x2="950" y2="310" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+  <line x1="250" y1="310" x2="250" y2="340" stroke="rgba(124,108,240,0.4)" stroke-width="1.5"/>
+  <line x1="600" y1="310" x2="600" y2="340" stroke="rgba(124,108,240,0.4)" stroke-width="1.5"/>
+  <line x1="950" y1="310" x2="950" y2="340" stroke="rgba(124,108,240,0.4)" stroke-width="1.5"/>
+  <polygon points="244,335 250,347 256,335" fill="rgba(124,108,240,0.4)"/>
+  <polygon points="594,335 600,347 606,335" fill="rgba(124,108,240,0.4)"/>
+  <polygon points="944,335 950,347 956,335" fill="rgba(124,108,240,0.4)"/>
+
+  <!-- ===== TEAMMATES (row) ===== -->
+  <!-- Agent 1: Backend -->
+  <rect x="145" y="350" width="210" height="90" rx="12" fill="rgba(124,108,240,0.06)" stroke="#7c6cf0" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="165" y="370" width="24" height="24" rx="5" fill="rgba(124,108,240,0.2)"/>
+  <text x="177" y="388" text-anchor="middle" fill="#7c6cf0" font-size="12">B</text>
+  <text x="200" y="385" fill="#e8e6e3" font-size="13" font-weight="700">Backend Agent</text>
+  <text x="165" y="408" fill="#8a8a8e" font-size="10">Cria endpoints, validacao,</text>
+  <text x="165" y="422" fill="#8a8a8e" font-size="10">seguranca, rate limiting</text>
+
+  <!-- Agent 2: Frontend -->
+  <rect x="495" y="350" width="210" height="90" rx="12" fill="rgba(124,108,240,0.06)" stroke="#7c6cf0" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="515" y="370" width="24" height="24" rx="5" fill="rgba(124,108,240,0.2)"/>
+  <text x="527" y="388" text-anchor="middle" fill="#7c6cf0" font-size="12">F</text>
+  <text x="550" y="385" fill="#e8e6e3" font-size="13" font-weight="700">Frontend Agent</text>
+  <text x="515" y="408" fill="#8a8a8e" font-size="10">UI, routing, animacoes,</text>
+  <text x="515" y="422" fill="#8a8a8e" font-size="10">CSS, acessibilidade</text>
+
+  <!-- Agent 3: Tester -->
+  <rect x="845" y="350" width="210" height="90" rx="12" fill="rgba(124,108,240,0.06)" stroke="#7c6cf0" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="865" y="370" width="24" height="24" rx="5" fill="rgba(124,108,240,0.2)"/>
+  <text x="877" y="388" text-anchor="middle" fill="#7c6cf0" font-size="12">T</text>
+  <text x="900" y="385" fill="#e8e6e3" font-size="13" font-weight="700">Tester Agent</text>
+  <text x="865" y="408" fill="#8a8a8e" font-size="10">Testes API, frontend,</text>
+  <text x="865" y="422" fill="#8a8a8e" font-size="10">seguranca, integracao</text>
+
+  <!-- PARALELO label -->
+  <rect x="380" y="345" width="100" height="22" rx="11" fill="rgba(124,108,240,0.15)"/>
+  <text x="430" y="360" text-anchor="middle" fill="#7c6cf0" font-size="9" font-weight="700" letter-spacing="1">PARALELO</text>
+
+  <!-- Arrows down from agents to integration -->
+  <line x1="250" y1="440" x2="250" y2="480" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="600" y1="440" x2="600" y2="480" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="950" y1="440" x2="950" y2="480" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="250" y1="480" x2="950" y2="480" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <line x1="600" y1="480" x2="600" y2="505" stroke="rgba(62,207,142,0.4)" stroke-width="1.5"/>
+  <polygon points="594,500 600,512 606,500" fill="rgba(62,207,142,0.4)"/>
+
+  <!-- ===== INTEGRACAO ===== -->
+  <rect x="390" y="515" width="420" height="60" rx="12" fill="rgba(62,207,142,0.06)" stroke="#3ecf8e" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="600" y="544" text-anchor="middle" fill="#e8e6e3" font-size="14" font-weight="700">Integracao + Verificacao</text>
+  <text x="600" y="563" text-anchor="middle" fill="#8a8a8e" font-size="10">npm test (58) + node -c syntax + Chrome DevTools audit visual</text>
+
+  <!-- Arrow down -->
+  <line x1="600" y1="575" x2="600" y2="610" stroke="rgba(62,207,142,0.3)" stroke-width="1.5"/>
+  <polygon points="594,605 600,617 606,605" fill="rgba(62,207,142,0.3)"/>
+
+  <!-- ===== COMMIT + PUSH ===== -->
+  <rect x="455" y="620" width="290" height="50" rx="12" fill="rgba(200,146,42,0.06)" stroke="#c8922a" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="600" y="649" text-anchor="middle" fill="#e8e6e3" font-size="13" font-weight="700">git commit + push + notifica Telegram</text>
+
+  <!-- ===== CRON LOOPS (bottom) ===== -->
+  <line x1="100" y1="710" x2="1100" y2="710" stroke="url(#gold-line)" stroke-width="1"/>
+  <text x="600" y="740" text-anchor="middle" fill="#3ecf8e" font-size="11" font-weight="700" letter-spacing="3">MONITORAMENTO CONTINUO (CRON LOOPS)</text>
+
+  <!-- Cron 1 -->
+  <rect x="100" y="760" width="280" height="65" rx="10" fill="rgba(62,207,142,0.05)" stroke="rgba(62,207,142,0.3)" stroke-width="1"/>
+  <circle cx="130" cy="792" r="10" fill="rgba(62,207,142,0.15)"/>
+  <text x="130" y="797" text-anchor="middle" fill="#3ecf8e" font-size="12">&#10003;</text>
+  <text x="150" y="785" fill="#e8e6e3" font-size="12" font-weight="700">/check-tests</text>
+  <text x="150" y="803" fill="#8a8a8e" font-size="10">A cada 5min: roda testes,</text>
+  <text x="150" y="815" fill="#8a8a8e" font-size="10">auto-corrige se falhar</text>
+
+  <!-- Cron 2 -->
+  <rect x="420" y="760" width="280" height="65" rx="10" fill="rgba(62,207,142,0.05)" stroke="rgba(62,207,142,0.3)" stroke-width="1"/>
+  <circle cx="450" cy="792" r="10" fill="rgba(62,207,142,0.15)"/>
+  <text x="450" y="797" text-anchor="middle" fill="#3ecf8e" font-size="12">&#8635;</text>
+  <text x="470" y="785" fill="#e8e6e3" font-size="12" font-weight="700">/babysit</text>
+  <text x="470" y="803" fill="#8a8a8e" font-size="10">A cada 5min: monitora PRs,</text>
+  <text x="470" y="815" fill="#8a8a8e" font-size="10">auto-rebase, fix CI</text>
+
+  <!-- Cron 3 -->
+  <rect x="740" y="760" width="280" height="65" rx="10" fill="rgba(62,207,142,0.05)" stroke="rgba(62,207,142,0.3)" stroke-width="1"/>
+  <circle cx="770" cy="792" r="10" fill="rgba(62,207,142,0.15)"/>
+  <text x="770" y="797" text-anchor="middle" fill="#3ecf8e" font-size="12">&#9993;</text>
+  <text x="790" y="785" fill="#e8e6e3" font-size="12" font-weight="700">/telegram-feedback</text>
+  <text x="790" y="803" fill="#8a8a8e" font-size="10">A cada 5min: processa msgs,</text>
+  <text x="790" y="815" fill="#8a8a8e" font-size="10">categoriza, cria issues</text>
+
+  <!-- ===== SIDE: Chrome DevTools ===== -->
+  <rect x="30" y="515" width="180" height="60" rx="10" fill="rgba(239,107,107,0.06)" stroke="rgba(239,107,107,0.3)" stroke-width="1"/>
+  <text x="120" y="544" text-anchor="middle" fill="#ef6b6b" font-size="11" font-weight="700">Chrome DevTools</text>
+  <text x="120" y="560" text-anchor="middle" fill="#8a8a8e" font-size="9">Screenshots, console, mobile</text>
+  <line x1="210" y1="545" x2="390" y2="545" stroke="rgba(239,107,107,0.2)" stroke-width="1" stroke-dasharray="4"/>
+
+  <!-- ===== SIDE: Ralph Loop ===== -->
+  <rect x="990" y="515" width="180" height="60" rx="10" fill="rgba(200,146,42,0.06)" stroke="rgba(200,146,42,0.3)" stroke-width="1"/>
+  <text x="1080" y="544" text-anchor="middle" fill="#c8922a" font-size="11" font-weight="700">Ralph Loop</text>
+  <text x="1080" y="560" text-anchor="middle" fill="#8a8a8e" font-size="9">Testa → falha → corrige → repete</text>
+  <line x1="990" y1="545" x2="810" y2="545" stroke="rgba(200,146,42,0.2)" stroke-width="1" stroke-dasharray="4"/>
+
+  <!-- ===== STATS BAR ===== -->
+  <rect x="100" y="850" width="1000" height="30" rx="6" fill="rgba(255,255,255,0.03)"/>
+  <text x="200" y="870" text-anchor="middle" fill="#c8922a" font-size="10" font-weight="700">15 FASES</text>
+  <text x="370" y="870" text-anchor="middle" fill="#7c6cf0" font-size="10" font-weight="700">58 TESTES</text>
+  <text x="540" y="870" text-anchor="middle" fill="#3ecf8e" font-size="10" font-weight="700">23 ENDPOINTS</text>
+  <text x="710" y="870" text-anchor="middle" fill="#5eaaef" font-size="10" font-weight="700">13 PAGINAS</text>
+  <text x="880" y="870" text-anchor="middle" fill="#ef6b6b" font-size="10" font-weight="700">40+ AGENTES</text>
+  <text x="1020" y="870" text-anchor="middle" fill="#8a8a8e" font-size="10" font-weight="700">~2 HORAS</text>
+</svg>
