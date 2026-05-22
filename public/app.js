@@ -654,7 +654,8 @@ function renderTopList(items) {
 
     return `
         <div class="top-list-page">
-            <h1 class="top-list-title">Top 20 Filmes e Séries</h1>
+            <h1 class="top-list-title">Top 20</h1>
+            <p class="top-list-subtitle">Os filmes e séries mais bem avaliados de todos os tempos</p>
             <div class="top-list-container">
                 ${listHtml}
             </div>
