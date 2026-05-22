@@ -322,6 +322,140 @@ function setupCastAnimationDelays() {
 }
 
 /**
+ * Setup carousel navigation arrows
+ */
+function setupCarouselNavigation() {
+    document.querySelectorAll('.carousel-section').forEach(section => {
+        const carousel = section.querySelector('.carousel-container');
+        const navLeft = section.querySelector('.carousel-nav-left');
+        const navRight = section.querySelector('.carousel-nav-right');
+
+        if (!carousel || !navLeft || !navRight) return;
+
+        const scrollAmount = 720; // 4 cards at 180px
+
+        const updateArrowState = () => {
+            const isAtStart = carousel.scrollLeft <= 0;
+            const isAtEnd = carousel.scrollLeft >= carousel.scrollWidth - carousel.clientWidth - 10;
+
+            navLeft.disabled = isAtStart;
+            navRight.disabled = isAtEnd;
+        };
+
+        const scrollCarousel = (direction) => {
+            const target = carousel.scrollLeft + (direction === 'left' ? -scrollAmount : scrollAmount);
+            carousel.scrollTo({ left: target, behavior: 'smooth' });
+        };
+
+        navLeft.addEventListener('click', () => scrollCarousel('left'));
+        navRight.addEventListener('click', () => scrollCarousel('right'));
+
+        carousel.addEventListener('scroll', updateArrowState, { passive: true });
+        window.addEventListener('resize', updateArrowState);
+
+        updateArrowState();
+    });
+}
+
+/**
+ * Setup touch/swipe support for carousels
+ */
+function setupCarouselTouch() {
+    document.querySelectorAll('.carousel-container').forEach(carousel => {
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        carousel.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, false);
+
+        carousel.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, false);
+
+        const handleSwipe = () => {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > swipeThreshold) {
+                const scrollAmount = 360;
+                const direction = diff > 0 ? 1 : -1;
+                const target = carousel.scrollLeft + (scrollAmount * direction);
+                carousel.scrollTo({ left: target, behavior: 'smooth' });
+            }
+        };
+    });
+}
+
+/**
+ * Setup hero slideshow
+ */
+function setupHeroSlideshow() {
+    const slideshow = document.querySelector('.hero-slideshow');
+    if (!slideshow) return;
+
+    const slides = slideshow.querySelectorAll('.hero-slide');
+    const dots = slideshow.querySelectorAll('.hero-dot');
+    const prevBtn = slideshow.querySelector('.hero-nav-prev');
+    const nextBtn = slideshow.querySelector('.hero-nav-next');
+
+    if (slides.length === 0) return;
+
+    let currentSlide = 0;
+    let autoplayInterval;
+
+    const showSlide = (index) => {
+        slides.forEach(slide => slide.classList.remove('active'));
+        dots.forEach(dot => dot.classList.remove('active'));
+
+        slides[index].classList.add('active');
+        dots[index].classList.add('active');
+        currentSlide = index;
+    };
+
+    const nextSlide = () => {
+        const nextIndex = (currentSlide + 1) % slides.length;
+        showSlide(nextIndex);
+        resetAutoplay();
+    };
+
+    const prevSlide = () => {
+        const prevIndex = (currentSlide - 1 + slides.length) % slides.length;
+        showSlide(prevIndex);
+        resetAutoplay();
+    };
+
+    const startAutoplay = () => {
+        autoplayInterval = setInterval(nextSlide, 5000);
+    };
+
+    const stopAutoplay = () => {
+        clearInterval(autoplayInterval);
+    };
+
+    const resetAutoplay = () => {
+        stopAutoplay();
+        startAutoplay();
+    };
+
+    if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+    if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            showSlide(index);
+            resetAutoplay();
+        });
+    });
+
+    slideshow.addEventListener('mouseenter', stopAutoplay);
+    slideshow.addEventListener('mouseleave', startAutoplay);
+
+    startAutoplay();
+}
+
+/**
  * Render breadcrumb navigation
  */
 function renderBreadcrumb(movieTitle) {
@@ -407,6 +541,53 @@ function renderMovieCard(movie, isTrending = false) {
 }
 
 /**
+ * Render hero slideshow
+ */
+function renderHeroSlideshow(trendingMovies) {
+    if (!Array.isArray(trendingMovies) || trendingMovies.length === 0) {
+        return '';
+    }
+
+    const slides = trendingMovies.slice(0, 5).map((movie, index) => {
+        const backdropUrl = movie.backdrop_path
+            ? validateImageUrl(`https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`)
+            : null;
+
+        const slideImage = backdropUrl
+            ? `<img src="${backdropUrl}" alt="Cena de ${escapeHtml(movie.title)}" class="hero-slide-image" loading="lazy">`
+            : `<div class="hero-slide-image" style="background-color: var(--bg-tertiary);"></div>`;
+
+        return `
+            <div class="hero-slide ${index === 0 ? 'active' : ''}" data-slide-index="${index}">
+                ${slideImage}
+                <div class="hero-overlay">
+                    <div class="hero-info">
+                        <div class="hero-title">${escapeHtml(movie.title)}</div>
+                        <div class="hero-rating">★ ${(movie.vote_average || 0).toFixed(1)}</div>
+                        <div class="hero-overview">${escapeHtml(movie.overview || '')}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    const dotsHtml = trendingMovies.slice(0, 5).map((_, index) => `
+        <button class="hero-dot ${index === 0 ? 'active' : ''}" data-slide-index="${index}" aria-label="Ir para slide ${index + 1}"></button>
+    `).join('');
+
+    return `
+        <div class="hero-slideshow">
+            ${slides}
+            <button class="hero-nav-btn hero-nav-prev" aria-label="Slide anterior">‹</button>
+            <button class="hero-nav-btn hero-nav-next" aria-label="Próximo slide">›</button>
+            <div class="hero-controls">
+                ${dotsHtml}
+            </div>
+        </div>
+    `;
+}
+
+/**
  * Render home page with hero banner and carousels
  */
 function renderHome(trendingData, popularData, topRatedData, genresData, nowPlayingData, upcomingData) {
@@ -414,26 +595,8 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
         return renderError('Dados inválidos recebidos do servidor');
     }
 
-    const trendingMovie = trendingData.results?.[0];
-
-    let heroBanner = '';
-    if (trendingMovie && trendingMovie.backdrop_path && trendingMovie.title) {
-        const backdropUrl = validateImageUrl(`https://image.tmdb.org/t/p/w1280${trendingMovie.backdrop_path}`);
-        if (backdropUrl) {
-            heroBanner = `
-                <div class="hero-banner">
-                    <img src="${backdropUrl}" alt="Cena de ${escapeHtml(trendingMovie.title)}" class="hero-banner-image" loading="lazy">
-                    <div class="hero-overlay">
-                        <div class="hero-info">
-                            <div class="hero-title">${escapeHtml(trendingMovie.title)}</div>
-                            <div class="hero-rating">★ ${(trendingMovie.vote_average || 0).toFixed(1)}</div>
-                            <div class="hero-overview">${escapeHtml(trendingMovie.overview || '')}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-    }
+    const trendingMovies = Array.isArray(trendingData.results) ? trendingData.results.slice(0, 20) : [];
+    const heroBanner = renderHeroSlideshow(trendingMovies.slice(0, 5));
 
     let genresHtml = '';
     if (genresData && Array.isArray(genresData.genres)) {
@@ -451,7 +614,6 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
         `;
     }
 
-    const trendingMovies = Array.isArray(trendingData.results) ? trendingData.results.slice(0, 20) : [];
     const popularMovies = Array.isArray(popularData?.results) ? popularData.results.slice(0, 20) : [];
     const topRatedMovies = Array.isArray(topRatedData?.results) ? topRatedData.results.slice(0, 20) : [];
     const nowPlayingMovies = Array.isArray(nowPlayingData?.results) ? nowPlayingData.results.slice(0, 20) : [];
@@ -462,39 +624,49 @@ function renderHome(trendingData, popularData, topRatedData, genresData, nowPlay
 
         ${genresHtml}
 
-        <div class="carousel-section">
+        <div class="carousel-section is-home-carousel">
             <div class="section-title">Em Cartaz</div>
             <div class="carousel-container">
                 ${nowPlayingMovies.map(m => renderMovieCard(m, false)).join('')}
             </div>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
         </div>
 
-        <div class="carousel-section">
+        <div class="carousel-section is-home-carousel">
             <div class="section-title">Tendência da Semana</div>
             <div class="carousel-container">
                 ${trendingMovies.map(m => renderMovieCard(m, true)).join('')}
             </div>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
         </div>
 
-        <div class="carousel-section">
+        <div class="carousel-section is-home-carousel">
             <div class="section-title">Próximos Lançamentos</div>
             <div class="carousel-container">
                 ${upcomingMovies.map(m => renderMovieCard(m, false)).join('')}
             </div>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
         </div>
 
-        <div class="carousel-section">
+        <div class="carousel-section is-home-carousel">
             <div class="section-title">Populares Agora</div>
             <div class="carousel-container">
                 ${popularMovies.map(m => renderMovieCard(m, false)).join('')}
             </div>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
         </div>
 
-        <div class="carousel-section">
+        <div class="carousel-section is-home-carousel">
             <div class="section-title">Melhor Avaliados</div>
             <div class="carousel-container">
                 ${topRatedMovies.map(m => renderMovieCard(m, false)).join('')}
             </div>
+            <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
+            <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
         </div>
     `;
 }
@@ -703,11 +875,13 @@ function renderMovieDetail(movie) {
     if (Array.isArray(movie.similar?.results) && movie.similar.results.length > 0) {
         const similarMovies = movie.similar.results.slice(0, 10);
         similarHtml = `
-            <div class="similar-section">
+            <div class="similar-section is-home-carousel">
                 <div class="similar-title">Filmes Similares</div>
                 <div class="carousel-container">
                     ${similarMovies.map(m => renderMovieCard(m)).join('')}
                 </div>
+                <button class="carousel-nav carousel-nav-left" aria-label="Rolar para esquerda">‹</button>
+                <button class="carousel-nav carousel-nav-right" aria-label="Rolar para direita">›</button>
             </div>
         `;
     }
@@ -769,7 +943,9 @@ async function loadHome() {
         attachMovieCardListeners();
         attachGenrePillListeners();
         setupCardAnimationDelays();
-        setupParallax();
+        setupHeroSlideshow();
+        setupCarouselNavigation();
+        setupCarouselTouch();
         focusMainContent();
         announceToScreenReader('Página inicial carregada');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -881,6 +1057,8 @@ async function loadMovieDetail(movieId) {
 
         attachMovieCardListeners();
         attachReviewExpandListeners();
+        setupCarouselNavigation();
+        setupCarouselTouch();
         focusMainContent();
         announceToScreenReader(`Detalhes do filme: ${movie.title}`);
         currentPage = 'detail';
