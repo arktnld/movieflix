@@ -11,6 +11,66 @@ function escapeHtml(text) {
 }
 
 /**
+ * Validates and sanitizes image URLs from TMDB API
+ */
+function validateImageUrl(url) {
+    if (!url) return null;
+    try {
+        const urlObj = new URL(url);
+        if (urlObj.hostname === 'image.tmdb.org') {
+            return url;
+        }
+    } catch (e) {
+        // Invalid URL
+    }
+    return null;
+}
+
+/**
+ * Validates YouTube embed URLs
+ */
+function validateYouTubeKey(key) {
+    if (!key) return null;
+    if (/^[a-zA-Z0-9_-]{11}$/.test(key)) {
+        return key;
+    }
+    return null;
+}
+
+/**
+ * Validates movie ID (must be positive integer)
+ */
+function validateMovieId(id) {
+    const parsed = parseInt(id, 10);
+    if (!isNaN(parsed) && parsed > 0 && parsed.toString() === id) {
+        return parsed;
+    }
+    return null;
+}
+
+/**
+ * Validates and sanitizes search query
+ */
+function validateSearchQuery(query) {
+    if (!query || typeof query !== 'string') return null;
+    const trimmed = query.trim();
+    if (trimmed.length === 0 || trimmed.length > 200) return null;
+    if (/<[^>]*>/g.test(trimmed)) {
+        return null;
+    }
+    return trimmed;
+}
+
+/**
+ * Logs messages only in development
+ */
+function devLog(...args) {
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+        console.error(...args);
+    }
+}
+
+/**
  * Fetch wrapper with error handling
  */
 async function apiFetch(url) {
@@ -28,7 +88,7 @@ async function apiFetch(url) {
         return data;
     } catch (error) {
         hideLoadingBar();
-        console.error('API Error:', error);
+        devLog('API Error:', error);
         showToast(error.message, 'error');
         throw error;
     }
@@ -283,8 +343,12 @@ function renderError(message) {
  * Render a single movie card
  */
 function renderMovieCard(movie, isTrending = false) {
+    if (!movie || typeof movie.id !== 'number' || !movie.title) {
+        return '';
+    }
+
     const poster = movie.poster_path
-        ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+        ? validateImageUrl(`https://image.tmdb.org/t/p/w500${movie.poster_path}`)
         : null;
 
     const posterImg = poster
@@ -310,28 +374,34 @@ function renderMovieCard(movie, isTrending = false) {
  * Render home page with hero banner and carousels
  */
 function renderHome(trendingData, popularData, topRatedData) {
+    if (!trendingData || !Array.isArray(trendingData.results)) {
+        return renderError('Dados inválidos recebidos do servidor');
+    }
+
     const trendingMovie = trendingData.results?.[0];
 
     let heroBanner = '';
-    if (trendingMovie && trendingMovie.backdrop_path) {
-        const backdropUrl = `https://image.tmdb.org/t/p/w1280${trendingMovie.backdrop_path}`;
-        heroBanner = `
-            <div class="hero-banner">
-                <img src="${backdropUrl}" alt="Hero" class="hero-banner-image" loading="lazy">
-                <div class="hero-overlay">
-                    <div class="hero-info">
-                        <div class="hero-title">${escapeHtml(trendingMovie.title)}</div>
-                        <div class="hero-rating">★ ${(trendingMovie.vote_average || 0).toFixed(1)}</div>
-                        <div class="hero-overview">${escapeHtml(trendingMovie.overview || '')}</div>
+    if (trendingMovie && trendingMovie.backdrop_path && trendingMovie.title) {
+        const backdropUrl = validateImageUrl(`https://image.tmdb.org/t/p/w1280${trendingMovie.backdrop_path}`);
+        if (backdropUrl) {
+            heroBanner = `
+                <div class="hero-banner">
+                    <img src="${backdropUrl}" alt="Hero" class="hero-banner-image" loading="lazy">
+                    <div class="hero-overlay">
+                        <div class="hero-info">
+                            <div class="hero-title">${escapeHtml(trendingMovie.title)}</div>
+                            <div class="hero-rating">★ ${(trendingMovie.vote_average || 0).toFixed(1)}</div>
+                            <div class="hero-overview">${escapeHtml(trendingMovie.overview || '')}</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
     }
 
-    const trendingMovies = trendingData.results?.slice(0, 20) || [];
-    const popularMovies = popularData.results?.slice(0, 20) || [];
-    const topRatedMovies = topRatedData.results?.slice(0, 20) || [];
+    const trendingMovies = Array.isArray(trendingData.results) ? trendingData.results.slice(0, 20) : [];
+    const popularMovies = Array.isArray(popularData?.results) ? popularData.results.slice(0, 20) : [];
+    const topRatedMovies = Array.isArray(topRatedData?.results) ? topRatedData.results.slice(0, 20) : [];
 
     return `
         ${heroBanner}
@@ -363,17 +433,22 @@ function renderHome(trendingData, popularData, topRatedData) {
  * Render search results page
  */
 function renderSearchResults(query, results) {
+    if (!results || !Array.isArray(results.results)) {
+        return renderError('Resposta inválida do servidor');
+    }
+
     const movies = results.results || [];
+    const sanitizedQuery = escapeHtml(query);
 
     if (movies.length === 0) {
         return `
-            <div class="search-page-title">Resultados para "${escapeHtml(query)}"</div>
+            <div class="search-page-title">Resultados para "${sanitizedQuery}"</div>
             <div class="no-results">Nenhum filme encontrado</div>
         `;
     }
 
     return `
-        <div class="search-page-title">Resultados para "${escapeHtml(query)}"</div>
+        <div class="search-page-title">Resultados para "${sanitizedQuery}"</div>
         <div class="search-results">
             ${movies.map(m => renderMovieCard(m)).join('')}
         </div>
@@ -384,12 +459,16 @@ function renderSearchResults(query, results) {
  * Render movie detail page
  */
 function renderMovieDetail(movie) {
+    if (!movie || !movie.title || typeof movie.id !== 'number') {
+        return renderError('Filme não encontrado ou dados inválidos');
+    }
+
     const backdrop = movie.backdrop_path
-        ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`
+        ? validateImageUrl(`https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`)
         : null;
 
     const poster = movie.poster_path
-        ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+        ? validateImageUrl(`https://image.tmdb.org/t/p/w500${movie.poster_path}`)
         : null;
 
     const backdropImg = backdrop
@@ -402,46 +481,55 @@ function renderMovieDetail(movie) {
 
     const rating = renderStarRating(movie.vote_average);
 
-    const genres = (movie.genres || [])
-        .map(g => `<span class="genre-tag">${escapeHtml(g.name)}</span>`)
-        .join('');
+    const genres = Array.isArray(movie.genres)
+        ? movie.genres
+            .filter(g => g && g.name)
+            .map(g => `<span class="genre-tag">${escapeHtml(g.name)}</span>`)
+            .join('')
+        : '';
 
-    const castMembers = (movie.credits?.cast || [])
-        .slice(0, 10)
-        .map(actor => {
-            const photo = actor.profile_path
-                ? `https://image.tmdb.org/t/p/w185${actor.profile_path}`
-                : null;
+    const castMembers = Array.isArray(movie.credits?.cast)
+        ? movie.credits.cast
+            .slice(0, 10)
+            .filter(a => a && a.name)
+            .map(actor => {
+                const photo = actor.profile_path
+                    ? validateImageUrl(`https://image.tmdb.org/t/p/w185${actor.profile_path}`)
+                    : null;
 
-            const photoImg = photo
-                ? `<img src="${photo}" alt="${escapeHtml(actor.name)}" class="cast-photo" loading="lazy">`
-                : `<div class="cast-photo" style="background-color: var(--bg-tertiary);"></div>`;
+                const photoImg = photo
+                    ? `<img src="${photo}" alt="${escapeHtml(actor.name)}" class="cast-photo" loading="lazy">`
+                    : `<div class="cast-photo" style="background-color: var(--bg-tertiary);"></div>`;
 
-            return `
-                <div class="cast-member">
-                    ${photoImg}
-                    <div class="cast-name">${escapeHtml(actor.name)}</div>
-                    <div class="cast-character">${escapeHtml(actor.character || '')}</div>
-                </div>
-            `;
-        })
-        .join('');
+                return `
+                    <div class="cast-member">
+                        ${photoImg}
+                        <div class="cast-name">${escapeHtml(actor.name)}</div>
+                        <div class="cast-character">${escapeHtml(actor.character || '')}</div>
+                    </div>
+                `;
+            })
+            .join('')
+        : '';
 
     let videoHtml = '';
     const videoKey = getVideoKey(movie.videos?.results);
     if (videoKey) {
-        videoHtml = `
-            <div class="videos-section">
-                <div class="videos-title">Trailer</div>
-                <div class="video-container">
-                    <iframe src="https://www.youtube.com/embed/${escapeHtml(videoKey)}"
-                            title="Trailer"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen>
-                    </iframe>
+        const validatedKey = validateYouTubeKey(videoKey);
+        if (validatedKey) {
+            videoHtml = `
+                <div class="videos-section">
+                    <div class="videos-title">Trailer</div>
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/${validatedKey}"
+                                title="Trailer"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                        </iframe>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
     }
 
     let castHtml = '';
@@ -519,7 +607,9 @@ async function loadHome() {
  * Load and render search results
  */
 async function loadSearch(query) {
-    if (!query || query.trim() === '') {
+    const validatedQuery = validateSearchQuery(query);
+
+    if (!validatedQuery) {
         loadHome();
         return;
     }
@@ -527,8 +617,8 @@ async function loadSearch(query) {
     app.innerHTML = renderLoading();
 
     try {
-        const results = await apiFetch(`/api/search?q=${encodeURIComponent(query)}`);
-        app.innerHTML = renderSearchResults(query, results);
+        const results = await apiFetch(`/api/search?q=${encodeURIComponent(validatedQuery)}`);
+        app.innerHTML = renderSearchResults(validatedQuery, results);
         attachMovieCardListeners();
         currentPage = 'search';
     } catch (error) {
@@ -540,10 +630,17 @@ async function loadSearch(query) {
  * Load and render movie detail page
  */
 async function loadMovieDetail(movieId) {
+    const validatedId = validateMovieId(movieId);
+
+    if (validatedId === null) {
+        app.innerHTML = renderError('ID de filme inválido');
+        return;
+    }
+
     app.innerHTML = renderLoading();
 
     try {
-        const movie = await apiFetch(`/api/movie/${movieId}`);
+        const movie = await apiFetch(`/api/movie/${validatedId}`);
         app.innerHTML = renderMovieDetail(movie);
 
         const backButton = document.getElementById('back-button');
@@ -583,14 +680,32 @@ function handleRoute() {
         loadHome();
         searchInput.value = '';
     } else if (hash.startsWith('/search/')) {
-        const query = decodeURIComponent(hash.slice(8));
-        searchInput.value = query;
-        loadSearch(query);
+        const encodedQuery = hash.slice(8);
+        let query = '';
+        try {
+            query = decodeURIComponent(encodedQuery);
+        } catch (e) {
+            devLog('Invalid search query encoding');
+            loadHome();
+            return;
+        }
+        const validatedQuery = validateSearchQuery(query);
+        if (validatedQuery) {
+            searchInput.value = validatedQuery;
+            loadSearch(validatedQuery);
+        } else {
+            loadHome();
+        }
     } else if (hash.startsWith('/movie/')) {
         const movieId = hash.slice(7);
-        loadMovieDetail(movieId);
+        const validatedId = validateMovieId(movieId);
+        if (validatedId !== null) {
+            loadMovieDetail(movieId);
+        } else {
+            app.innerHTML = renderError('Filme não encontrado');
+        }
     } else {
-        loadHome();
+        app.innerHTML = renderError('Página não encontrada');
     }
 }
 
